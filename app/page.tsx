@@ -39,9 +39,6 @@ export default function Home() {
 
   return (
     <main>
-       <div style={{background:'#fffbeb', padding:8, textAlign:'center', fontWeight:700}}>
-    DEBUG-BUILD-MARKER-20250915
-  </div>
       {/* Hero Section */}
       <section
         className="relative bg-cover bg-center"
