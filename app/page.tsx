@@ -39,17 +39,31 @@ export default function Home() {
 
   return (
     <main>
-      {/* Hero */}
-      <section className="relative bg-cover bg-center" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1503264116251-35a269479413?q=80&w=1920&auto=format')" }}>
+       <div style={{background:'#fffbeb', padding:8, textAlign:'center', fontWeight:700}}>
+    DEBUG-BUILD-MARKER-20250915
+  </div>
+      {/* Hero Section */}
+      <section
+        className="relative bg-cover bg-center"
+        style={{
+          backgroundImage:
+            "url('https://images.unsplash.com/photo-1503264116251-35a269479413?q=80&w=1920&auto=format')",
+        }}
+      >
         <div className="bg-black/40">
           <div className="max-w-6xl mx-auto px-6 py-28 text-center text-white">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">Discover Varanasi & Beyond</h1>
-            <p className="text-lg md:text-xl mb-8">Trusted cabs, pilgrimage packages, hotels and local tours — curated for Kashi travellers.</p>
+            <h1 className="text-4xl md:text-5xl font-bold mb-4">
+              Discover Varanasi & Beyond
+            </h1>
+            <p className="text-lg md:text-xl mb-8">
+              Trusted cabs, pilgrimage packages, hotels and local tours — curated
+              for Kashi travellers.
+            </p>
           </div>
         </div>
       </section>
 
-      {/* Multi-stop planner (replace old search form) */}
+      {/* ✅ Multi-stop Trip Planner */}
       <section className="py-10 bg-gray-50">
         <div className="max-w-6xl mx-auto px-4">
           <VaranasiTripSelector />
@@ -62,12 +76,22 @@ export default function Home() {
           <h2 className="text-2xl font-bold mb-6">Popular Services</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {packages.map((pkg) => (
-              <div key={pkg.title} className="border rounded-lg overflow-hidden shadow hover:shadow-md transition">
-                <img src={pkg.img} alt={pkg.title} className="w-full h-48 object-cover" />
+              <div
+                key={pkg.title}
+                className="border rounded-lg overflow-hidden shadow hover:shadow-md transition"
+              >
+                <img
+                  src={pkg.img}
+                  alt={pkg.title}
+                  className="w-full h-48 object-cover"
+                />
                 <div className="p-4">
                   <h3 className="font-semibold text-lg">{pkg.title}</h3>
                   <p className="text-sm text-gray-600 mb-3">{pkg.desc}</p>
-                  <Link href={pkg.href} className="inline-block bg-blue-600 text-white px-4 py-2 rounded">
+                  <Link
+                    href={pkg.href}
+                    className="inline-block bg-blue-600 text-white px-4 py-2 rounded"
+                  >
                     Book
                   </Link>
                 </div>
