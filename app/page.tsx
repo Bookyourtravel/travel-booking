@@ -38,13 +38,13 @@ export default function Home() {
   ];
 
   return (
-    <main>
-      {/* Hero Section */}
+    <main className="min-h-screen">
+      {/* ---------- Hero ---------- */}
       <section
         className="relative bg-cover bg-center"
         style={{
           backgroundImage:
-            "url('https://images.unsplash.com/photo-1503264116251-35a269479413?q=80&w=1920&auto=format')",
+            "url('https://images.unsplash.com/photo-1503264116251-35a269479413?q=80&w=1920&auto=format&fit=crop')",
         }}
       >
         <div className="bg-black/40">
@@ -56,41 +56,47 @@ export default function Home() {
               Trusted cabs, pilgrimage packages, hotels and local tours — curated
               for Kashi travellers.
             </p>
+            {/* Optional CTA: anchor to services */}
+            <a
+              href="#services"
+              className="inline-block bg-amber-400 text-slate-900 px-6 py-2 rounded-md font-medium shadow hover:opacity-95"
+            >
+              Plan your trip
+            </a>
           </div>
         </div>
       </section>
 
-      {/* ✅ Multi-stop Trip Planner */}
-      <section className="py-10 bg-gray-50">
-        <div className="max-w-6xl mx-auto px-4">
-          <VaranasiTripSelector />
-        </div>
-      </section>
+      {/* ---------- Popular Services (keeps visible) ---------- */}
+      <section className="py-12 bg-white">
+        <div className="max-w-6xl mx-auto px-6">
+          <h2 className="text-2xl md:text-3xl font-bold mb-6">Popular Services</h2>
 
-      {/* Popular Packages */}
-      <section className="py-16">
-        <div className="max-w-6xl mx-auto px-4">
-          <h2 className="text-2xl font-bold mb-6">Popular Services</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {packages.map((pkg) => (
               <div
                 key={pkg.title}
-                className="border rounded-lg overflow-hidden shadow hover:shadow-md transition"
+                className="rounded-xl overflow-hidden border shadow-sm hover:shadow-lg transition"
               >
-                <img
-                  src={pkg.img}
-                  alt={pkg.title}
-                  className="w-full h-48 object-cover"
-                />
+                <div className="h-44 overflow-hidden">
+                  <img
+                    src={pkg.img}
+                    alt={pkg.title}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
                 <div className="p-4">
                   <h3 className="font-semibold text-lg">{pkg.title}</h3>
-                  <p className="text-sm text-gray-600 mb-3">{pkg.desc}</p>
-                  <Link
-                    href={pkg.href}
-                    className="inline-block bg-blue-600 text-white px-4 py-2 rounded"
-                  >
-                    Book
-                  </Link>
+                  <p className="text-sm text-gray-600 my-2">{pkg.desc}</p>
+                  <div className="flex items-center justify-between mt-3">
+                    <Link
+                      href={pkg.href}
+                      className="text-sm bg-blue-600 text-white px-3 py-2 rounded-md"
+                    >
+                      Book
+                    </Link>
+                    <div className="text-xs text-gray-500">Starting ₹999</div>
+                  </div>
                 </div>
               </div>
             ))}
@@ -98,8 +104,71 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t mt-10">
+      {/* ---------- Services section (TRIP PLANNER IS HERE) ---------- */}
+      <section id="services" className="py-14 bg-gray-50">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-3xl font-bold">Plan Your Trip</h2>
+              <p className="text-gray-600 mt-1">
+                Select destinations in order, get instant price estimate and
+                book — all from Varanasi.
+              </p>
+            </div>
+            <div className="text-sm text-gray-500">
+              Pro tip: add stops in the exact order you want to travel.
+            </div>
+          </div>
+
+          {/* Attractive card wrapper */}
+          <div className="bg-white rounded-2xl shadow-xl p-6 border">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Left: planner (full-width on mobile) */}
+              <div className="lg:col-span-2">
+                <VaranasiTripSelector />
+              </div>
+
+              {/* Right: perks / features and CTA */}
+              <aside className="space-y-4">
+                <div className="p-4 border rounded-lg">
+                  <h4 className="font-semibold mb-2">Why book with us</h4>
+                  <ul className="text-sm space-y-2 text-gray-700">
+                    <li>• Trusted drivers & verified cabs</li>
+                    <li>• Transparent pricing & instant estimate</li>
+                    <li>• Local guide option available</li>
+                    <li>• Easy cancellations & support</li>
+                  </ul>
+                </div>
+
+                <div className="p-4 border rounded-lg flex flex-col gap-3">
+                  <div className="text-sm text-gray-600">Need help?</div>
+                  <a
+                    href="/contact"
+                    className="block bg-sky-600 text-white text-center py-2 rounded-md"
+                  >
+                    Contact us
+                  </a>
+                  <button
+                    onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                    className="w-full border rounded-md py-2"
+                  >
+                    Back to top
+                  </button>
+                </div>
+
+                <div className="p-4 rounded-lg bg-gradient-to-r from-amber-50 to-amber-100 border">
+                  <div className="text-xs text-gray-600">Special offer</div>
+                  <div className="font-semibold mt-1">10% off on 2+ stops</div>
+                  <div className="text-sm text-gray-600 mt-2">Use code: KASHI10</div>
+                </div>
+              </aside>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ---------- Footer ---------- */}
+      <footer className="border-t mt-12">
         <div className="max-w-6xl mx-auto px-6 py-6 text-center text-sm text-gray-500">
           © {new Date().getFullYear()} BookYourTravell · Terms · Privacy
         </div>
