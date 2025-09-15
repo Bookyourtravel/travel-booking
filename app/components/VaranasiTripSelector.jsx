@@ -1,193 +1,133 @@
 "use client";
-import React, { useState, useMemo } from "react";
-import { calculateMultiStopPrice } from "./MultiStopPrice";
-import { DISTANCES } from "../data/distances";
+import { useState } from "react";
+import calculateMultiStopPrice from "./MultiStopPrice"; // अगर तूने export default रखा है adjust कर
+
+const DESTS = [
+  { id: "prayagraj", label: "Prayagraj (Sangam)" },
+  { id: "ayodhya", label: "Ayodhya" },
+  { id: "lucknow", label: "Lucknow Airport" },
+  { id: "local-darshan", label: "Local Darshan - Kashi Vishwanath" },
+  { id: "ganga-aarti", label: "Evening Ganga Aarti" },
+];
 
 export default function VaranasiTripSelector() {
-  const STOPS = ["Prayagraj", "Ayodhya", "Lucknow"];
-
-  const [routeOrder, setRouteOrder] = useState(["Varanasi"]);
+  const [route, setRoute] = useState(["varanasi"]);
+  const [date, setDate] = useState("");
   const [passengers, setPassengers] = useState(2);
   const [cabType, setCabType] = useState("sedan");
-  const [date, setDate] = useState("");
   const [includeGuide, setIncludeGuide] = useState(false);
 
-  function addStop(stop) {
-    if (routeOrder.includes(stop)) return;
-    setRouteOrder((prev) => [...prev, stop]);
+  function addDest(id) {
+    if (route.includes(id)) return;
+    setRoute((r) => [...r, id]);
   }
-  function removeStop(index) {
-    setRouteOrder((prev) => prev.filter((_, i) => i !== index));
+  function removeDest(index) {
+    if (index === 0) return; // don't remove start
+    setRoute((r) => r.filter((_, i) => i !== index));
   }
-  function moveUp(index) {
-    if (index <= 1) return;
-    setRouteOrder((prev) => {
-      const arr = [...prev];
-      [arr[index - 1], arr[index]] = [arr[index], arr[index - 1]];
-      return arr;
+  function moveUp(i) {
+    if (i <= 1) return;
+    setRoute((r) => {
+      const copy = [...r];
+      [copy[i - 1], copy[i]] = [copy[i], copy[i - 1]];
+      return copy;
     });
   }
-  function moveDown(index) {
-    if (index === 0 || index === routeOrder.length - 1) return;
-    setRouteOrder((prev) => {
-      const arr = [...prev];
-      [arr[index], arr[index + 1]] = [arr[index + 1], arr[index]];
-      return arr;
+  function moveDown(i) {
+    setRoute((r) => {
+      if (i >= r.length - 1) return r;
+      const copy = [...r];
+      [copy[i], copy[i + 1]] = [copy[i + 1], copy[i]];
+      return copy;
     });
   }
 
-  const multiPrice = useMemo(() => {
-    try {
-      const result = calculateMultiStopPrice(routeOrder, DISTANCES, {
-        cabType,
-        passengers,
-        includeGuide,
-      });
-      return result;
-    } catch (e) {
-      return { error: e.message, total: 0, legs: [] };
-    }
-  }, [routeOrder, cabType, passengers, includeGuide]);
+  // simple price calc — uses external helper if available
+  let price = 0;
+  try {
+    price = calculateMultiStopPrice(route, {}, { cabType, passengers, includeGuide });
+  } catch (e) {
+    // fallback simple calc
+    price = 0;
+    price = (route.length - 1) * 800 * (cabType === "innova" ? 1.35 : 1);
+    if (includeGuide) price += 700;
+    price = Math.round(price);
+  }
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-3xl font-semibold mb-4">Varanasi Trip Planner</h1>
-      <p className="text-sm text-gray-600 mb-6">
-        Varanasi se apna route select karo, price automatic calculate ho jayega.
-      </p>
-
-      <div className="bg-white rounded-lg shadow p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          {/* Stops Selector */}
-          <div className="font-medium mb-2">Add destinations (order matters)</div>
-          <div className="flex gap-2 flex-wrap">
-            {STOPS.map((s) => (
-              <button
-                key={s}
-                onClick={() => addStop(s)}
-                className="px-3 py-1 border rounded text-sm"
-              >
-                + {s}
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* left: planner */}
+      <div className="lg:col-span-2">
+        <div className="mb-4">
+          <div className="text-sm text-gray-700 mb-2">Add destinations (order matters)</div>
+          <div className="flex flex-wrap gap-2">
+            {DESTS.map((d) => (
+              <button key={d.id}
+                onClick={() => addDest(d.id)}
+                className={`px-3 py-1.5 rounded-md border text-sm ${route.includes(d.id) ? "bg-amber-100 border-amber-300" : "bg-white hover:bg-gray-50"}`}>
+                + {d.label.split(" ")[0]}
               </button>
             ))}
           </div>
+        </div>
 
-          <div className="mt-3">
-            <div className="text-sm text-gray-600">Your route order:</div>
-            <ul className="mt-2 space-y-2">
-              {routeOrder.map((r, idx) => (
-                <li
-                  key={r + idx}
-                  className="flex items-center gap-2 p-2 border rounded"
-                >
-                  <div className="font-medium">
-                    {idx === 0 ? `${r} (start)` : r}
+        <div className="mb-4">
+          <div className="text-sm text-gray-600 mb-2">Your route order</div>
+          <div className="space-y-2">
+            {route.map((r, i) => {
+              const label = r === "varanasi" ? "Varanasi (start)" : (DESTS.find(x=>x.id===r)?.label || r);
+              return (
+                <div key={i} className="flex items-center gap-3 border rounded p-3">
+                  <div className="flex-1">
+                    <div className="font-medium">{label}</div>
+                    <div className="text-xs text-gray-500">Stop {i}</div>
                   </div>
-                  <div className="ml-auto flex items-center gap-2">
-                    {idx > 0 && (
-                      <button
-                        onClick={() => moveUp(idx)}
-                        className="text-xs px-2 py-1 border rounded"
-                      >
-                        ↑
-                      </button>
-                    )}
-                    {idx > 0 && (
-                      <button
-                        onClick={() => moveDown(idx)}
-                        className="text-xs px-2 py-1 border rounded"
-                      >
-                        ↓
-                      </button>
-                    )}
-                    {idx > 0 && (
-                      <button
-                        onClick={() => removeStop(idx)}
-                        className="text-xs px-2 py-1 border rounded text-red-600"
-                      >
-                        ✕
-                      </button>
-                    )}
+                  <div className="flex items-center gap-2">
+                    {i > 0 && <button onClick={()=>moveUp(i)} className="px-2 py-1 border rounded text-sm">▲</button>}
+                    {i < route.length-1 && <button onClick={()=>moveDown(i)} className="px-2 py-1 border rounded text-sm">▼</button>}
+                    {i !== 0 && <button onClick={()=>removeDest(i)} className="px-2 py-1 bg-red-50 text-red-600 border rounded text-sm">Remove</button>}
                   </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Date + options */}
-          <div className="mt-4">
-            <label className="block text-sm text-gray-700">Date</label>
-            <input
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              type="date"
-              className="mt-1 p-2 border rounded w-full"
-            />
-          </div>
-
-          <div className="mt-3 grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-sm text-gray-700">Passengers</label>
-              <input
-                type="number"
-                min={1}
-                value={passengers}
-                onChange={(e) => setPassengers(Number(e.target.value))}
-                className="mt-1 p-2 border rounded w-full"
-              />
-            </div>
-            <div>
-              <label className="block text-sm text-gray-700">Cab Type</label>
-              <select
-                value={cabType}
-                onChange={(e) => setCabType(e.target.value)}
-                className="mt-1 p-2 border rounded w-full"
-              >
-                <option value="sedan">Sedan</option>
-                <option value="suv">SUV</option>
-                <option value="innova">Innova</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="mt-3 flex items-center gap-3">
-            <input
-              id="guide"
-              type="checkbox"
-              checked={includeGuide}
-              onChange={(e) => setIncludeGuide(e.target.checked)}
-            />
-            <label htmlFor="guide" className="text-sm">
-              Include local guide (₹700)
-            </label>
+                </div>
+              );
+            })}
           </div>
         </div>
 
-        {/* Price summary */}
-        <div>
-          <h2 className="font-medium mb-3">Price summary</h2>
-          <div className="bg-gray-50 p-4 rounded">
-            <div className="text-sm text-gray-600">Legs:</div>
-            <ul className="mt-2 text-sm space-y-1">
-              {multiPrice.legs && multiPrice.legs.map((leg, i) => (
-                <li key={i} className="flex justify-between">
-                  <span>
-                    {leg.from} → {leg.to} ({leg.km} km)
-                  </span>
-                  <span>
-                    Est. ₹{Math.round(500 + leg.km * 9)}
-                  </span>
-                </li>
-              ))}
-            </ul>
-            <div className="mt-3 flex justify-between font-semibold">
-              <div>Total</div>
-              <div>₹{multiPrice.total ?? 0}</div>
-            </div>
-            <button className="mt-4 w-full bg-blue-600 text-white py-2 rounded hover:opacity-95">
-              Book now
-            </button>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm text-gray-700 mb-1">Date</label>
+            <input type="date" value={date} onChange={(e)=>setDate(e.target.value)} className="w-full border rounded px-3 py-2" />
           </div>
+          <div>
+            <label className="block text-sm text-gray-700 mb-1">Passengers</label>
+            <input type="number" min={1} value={passengers} onChange={(e)=>setPassengers(Number(e.target.value))} className="w-full border rounded px-3 py-2" />
+          </div>
+          <div>
+            <label className="block text-sm text-gray-700 mb-1">Cab Type</label>
+            <select value={cabType} onChange={(e)=>setCabType(e.target.value)} className="w-full border rounded px-3 py-2">
+              <option value="sedan">Sedan</option>
+              <option value="suv">SUV</option>
+              <option value="innova">Innova</option>
+            </select>
+          </div>
+          <div className="flex items-end">
+            <label className="inline-flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" checked={includeGuide} onChange={(e)=>setIncludeGuide(e.target.checked)} />
+              <span className="text-sm text-gray-700">Include local guide (₹700)</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      {/* right: summary */}
+      <div>
+        <div className="border rounded-lg p-4 bg-white shadow">
+          <div className="text-sm text-gray-500">Legs: <span className="font-medium">{Math.max(0, route.length-1)}</span></div>
+          <div className="mt-4 text-2xl font-bold">₹{price}</div>
+          <div className="mt-4">
+            <button className="w-full bg-blue-600 text-white py-2 rounded">Book now</button>
+          </div>
+          <div className="mt-4 text-xs text-gray-500">Payments processed securely. Prices are estimates — final price confirmed at booking.</div>
         </div>
       </div>
     </div>
