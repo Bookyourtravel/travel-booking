@@ -110,3 +110,9 @@ body {
   .cta-secondary { animation-delay: 440ms; }
   .badge { animation-delay: 520ms; }
 }
+@import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@700;900&family=Inter:wght@300;400;600;700&display=swap');
+
+:root{
+  --hero-serif: "Merriweather", serif;
+  --ui-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+}

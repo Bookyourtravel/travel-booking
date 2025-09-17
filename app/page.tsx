@@ -323,7 +323,7 @@ function BookByKmForm() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium">Pickup Location</label>
+          <label className="block text-sm font medium">Pickup Location</label>
           <input ref={pickupRef} placeholder="Hotel / Railway Station / Address" className="mt-1 block w-full border rounded px-3 py-2" />
         </div>
 
@@ -415,67 +415,74 @@ export default function HomePage() {
         src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places&v=weekly`}
       />
 
-      {/* HERO (improved) */}
+      {/* ===== HERO (upgraded — replaced only this block) ===== */}
       <section
         className="relative w-full"
         style={{
-          backgroundImage: `url('/images/kashi.jpg')`,
-          backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
-          backgroundSize: "cover",
-          minHeight: "70vh",
+          minHeight: "72vh",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
+          backgroundImage: `linear-gradient(180deg, rgba(8,8,8,0.45), rgba(8,8,8,0.45)), url('/images/kashi.jpg')`,
+          backgroundPosition: "center center",
+          backgroundRepeat: "no-repeat",
+          backgroundSize: "cover",
         }}
       >
-        {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black/70" />
+        {/* decorative overlay (no external css required) */}
+        <div className="absolute inset-0 pointer-events-none" aria-hidden style={{
+          background: "radial-gradient(1200px 600px at 10% 30%, rgba(0,0,0,0.45), transparent 20%), radial-gradient(1000px 500px at 90% 70%, rgba(0,0,0,0.35), transparent 20%)"
+        }} />
 
-        <div className="relative z-10 max-w-4xl mx-auto px-6 text-center text-white">
-          <h1 className="font-serif text-5xl md:text-6xl font-extrabold drop-shadow-lg">
-            Discover Varanasi & Beyond
+        <div className="relative z-10 max-w-5xl mx-auto px-6 text-center text-white">
+          <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl font-extrabold" style={{ fontFamily: "Merriweather, serif", textShadow: "0 6px 20px rgba(0,0,0,0.55)" }}>
+            Discover Varanasi — Curated Journeys, Trusted Drivers
           </h1>
-          <p className="mt-4 text-lg md:text-xl text-white/90">
-            Trusted cabs, pilgrimage packages, local tours and curated experiences — handpicked for Kashi travellers.
+
+          <p className="mt-4 text-base sm:text-lg md:text-xl text-white/90 max-w-3xl mx-auto" style={{ fontFamily: "Inter, system-ui, sans-serif" }}>
+            Handpicked local experiences, transparent per-km pricing and 24/7 support — for travellers who want the essence of Kashi with comfort and trust.
           </p>
 
-          {/* Trust badges */}
-          <div className="mt-6 flex flex-wrap justify-center gap-3">
-            <span className="px-4 py-1 rounded-full bg-white/10 backdrop-blur text-sm">✔ Verified Drivers</span>
-            <span className="px-4 py-1 rounded-full bg-white/10 backdrop-blur text-sm">📞 24/7 Support</span>
-            <span className="px-4 py-1 rounded-full bg-white/10 backdrop-blur text-sm">💰 Best Price Guaranteed</span>
+          {/* small badges */}
+          <div className="mt-4 flex justify-center gap-3 flex-wrap">
+            <span style={{ padding: "0.35rem .9rem", borderRadius: 999, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", fontWeight: 600, fontSize: ".875rem" }}>Per-Km Pricing</span>
+            <span style={{ padding: "0.35rem .9rem", borderRadius: 999, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", fontWeight: 600, fontSize: ".875rem" }}>Verified Drivers</span>
+            <span style={{ padding: "0.35rem .9rem", borderRadius: 999, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", fontWeight: 600, fontSize: ".875rem" }}>Instant Quotes</span>
           </div>
 
           {/* CTAs */}
-          <div className="mt-8 flex flex-col sm:flex-row justify-center gap-4">
+          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
             <a
               href="#top-trip-planner"
-              className="bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-lg font-semibold shadow-lg transform transition hover:scale-105"
-            >
+              className="inline-flex items-center gap-3 bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg"
+              style={{ boxShadow: "0 10px 30px rgba(217,119,6,0.18)", transform: "translateY(0)", transition: "transform .35s cubic-bezier(.2,.9,.3,1), box-shadow .2s" }}
+              onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-6px)")}
+              onMouseLeave={(e) => (e.currentTarget.style.transform = "translateY(0)")}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden><path d="M3 12h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M12 3v18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
               Book Now
             </a>
+
             <a
               href="#popular-services"
-              className="border border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-black transition"
+              className="inline-flex items-center gap-2 border border-white/20 text-white px-5 py-3 rounded-xl font-semibold hover:bg-white hover:text-black transition"
             >
               Explore Packages
             </a>
           </div>
 
-          {/* Animated counters row */}
+          {/* subtle stats */}
           <div className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
-            <div>
-              <p className="text-3xl md:text-4xl font-bold">10,000+</p>
-              <p className="text-sm text-white/80">Trips Completed</p>
+            <div style={{ background: "rgba(255,255,255,0.06)", backdropFilter: "blur(6px)", borderRadius: 12, padding: 16 }}>
+              <p className="text-2xl sm:text-3xl md:text-4xl font-bold">10,000+</p>
+              <p className="text-sm text-white/85">Trips Completed</p>
             </div>
-            <div>
-              <p className="text-3xl md:text-4xl font-bold">500+</p>
-              <p className="text-sm text-white/80">Verified Drivers</p>
+            <div style={{ background: "rgba(255,255,255,0.06)", backdropFilter: "blur(6px)", borderRadius: 12, padding: 16 }}>
+              <p className="text-2xl sm:text-3xl md:text-4xl font-bold">500+</p>
+              <p className="text-sm text-white/85">Verified Drivers</p>
             </div>
-            <div>
-              <p className="text-3xl md:text-4xl font-bold">4.8 ★</p>
-              <p className="text-sm text-white/80">Average Rating</p>
+            <div style={{ background: "rgba(255,255,255,0.06)", backdropFilter: "blur(6px)", borderRadius: 12, padding: 16 }}>
+              <p className="text-2xl sm:text-3xl md:text-4xl font-bold">4.8 ★</p>
+              <p className="text-sm text-white/85">Average Rating</p>
             </div>
           </div>
         </div>
