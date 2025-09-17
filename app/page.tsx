@@ -4,15 +4,6 @@ import React, { useEffect, useRef, useState } from "react";
 import Script from "next/script";
 import Link from "next/link";
 
-/**
- * Full page.tsx — Hero + Popular services + Trip planner (Book-by-km)
- *
- * Notes:
- * - Requires NEXT_PUBLIC_GOOGLE_MAPS_API_KEY in .env.local
- * - Places & Directions libraries loaded via Script tag below.
- * - If Google API not available, form still works with manual distance input.
- */
-
 /* -------------------- Types -------------------- */
 type CarOption = {
   id: string;
@@ -34,13 +25,39 @@ const PACKAGES = [
   {
     title: "Varanasi → Ayodhya Taxi",
     desc: "Reliable intercity taxi with fixed price and driver guide",
-    img: "/images/ayodhya.jpg",
+    images: ["/images/ayodhya1.jpg", "/images/ayodhya2.jpg", "/images/ayodhya3.jpg"],
     href: "/packages/ayodhya",
   },
-  { title: "Local Darshan - Kashi Vishwanath", desc: "Temple darshan + guided walk + Ganga Aarti evening experience", img: "/images/kashi.jpg", href: "/packages/kashi-darshan" },
-  { title: "Lucknow Airport Pickup/Drop", desc: "Comfortable sedan / Innova options with flight tracking", img: "/images/lucknow.jpg", href: "/packages/lucknow-airport" },
-  { title: "Varanasi → Prayagraj (Sangam)", desc: "Day trip or overnight packages with hotel add-ons", img: "/images/prayagraj.jpg", href: "/packages/prayagraj" },
-  { title: "Evening Ganga Aarti Special", desc: "Front-row aarti experience with priest and photography", img: "/images/ganga.jpg", href: "/packages/ganga-aarti" },
+  {
+    title: "Local Darshan - Kashi Vishwanath",
+    desc: "Temple darshan + guided walk + Ganga Aarti evening experience",
+    images: ["/images/kashi1.jpg", "/images/kashi2.jpg", "/images/kashi3.jpg", "/images/kashi4.jpg"],
+    href: "/packages/kashi-darshan",
+  },
+  {
+    title: "Lucknow Airport Pickup/Drop",
+    desc: "Comfortable sedan / Innova options with flight tracking",
+    images: ["/images/airport.jpg"],
+    href: "/packages/lucknow-airport",
+  },
+  {
+    title: "Varanasi → Prayagraj (Sangam)",
+    desc: "Day trip or overnight packages with hotel add-ons",
+    images: ["/images/prayagraj1.jpg", "/images/prayagraj2.jpg", "/images/prayagraj3.jpg"],
+    href: "/packages/prayagraj",
+  },
+  {
+    title: "Evening Ganga Aarti Special",
+    desc: "Front-row aarti experience with priest and photography",
+    images: ["/images/arti1.jpg", "/images/arti2.jpg", "/images/arti3.jpg"],
+    href: "/packages/ganga-aarti",
+  },
+  {
+    title: "Self-Drive Cars (Varanasi)",
+    desc: "Flexible self-drive hatchbacks & sedans — hourly or daily rentals with easy pickup/drop.",
+    images: ["/images/selfdrive1.jpg", "/images/selfdrive2.jpg"],
+    href: "/packages/self-drive",
+  },
 ];
 
 /* -------------------- Helper -------------------- */
@@ -48,7 +65,93 @@ function formatINR(n: number) {
   return "₹" + n.toLocaleString("en-IN", { maximumFractionDigits: 0 });
 }
 
-/* -------------------- BookByKmForm (inline component) -------------------- */
+/* ---------------- ImageCarousel ---------------- */
+function ImageCarousel({ images }: { images: string[] }) {
+  const [idx, setIdx] = useState(0);
+
+  useEffect(() => {
+    if (!images || images.length <= 1) return;
+    const t = setInterval(() => setIdx((i) => (i + 1) % images.length), 3000);
+    return () => clearInterval(t);
+  }, [images]);
+
+  return (
+    <div className="relative w-full overflow-hidden" style={{ minHeight: 140, height: "100%" }}>
+      {images && images.length ? (
+        images.map((src, i) => {
+          const active = i === idx;
+          return (
+            <img
+              key={i}
+              src={src}
+              alt={`slide-${i}`}
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                transition: "opacity 900ms ease, filter 900ms ease, transform 900ms ease",
+                opacity: active ? 1 : 0,
+                filter: active ? "blur(0px)" : "blur(6px)",
+                transform: active ? "scale(1)" : "scale(1.03)",
+              }}
+            />
+          );
+        })
+      ) : (
+        <div className="w-full h-full bg-gray-100" />
+      )}
+
+      {images && images.length > 1 && (
+        <div className="absolute left-3 bottom-3 flex gap-2 z-20">
+          {images.map((_, i) => (
+            <span
+              key={i}
+              className={`w-2 h-2 rounded-full transition-opacity ${i === idx ? "opacity-100" : "opacity-50"}`}
+              style={{ background: i === idx ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.6)" }}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ---------------- BackgroundWatermark ---------------- */
+function BackgroundWatermark({ images }: { images: string[] }) {
+  const [idx, setIdx] = useState(0);
+
+  useEffect(() => {
+    if (!images || images.length <= 1) return;
+    const t = setInterval(() => setIdx((i) => (i + 1) % images.length), 22000); // slow fade
+    return () => clearInterval(t);
+  }, [images]);
+
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden>
+      {images.map((src, i) => {
+        const active = i === idx;
+        return (
+          <img
+            key={i}
+            src={src}
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{
+              opacity: active ? 0.12 : 0,
+              filter: "blur(2px)",
+              transition: "opacity 8000ms ease-in-out, filter 8000ms ease-in-out",
+            }}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
+/* -------------------- BookByKmForm -------------------- */
 function BookByKmForm() {
   const [mapsLoaded, setMapsLoaded] = useState(false);
 
@@ -66,7 +169,6 @@ function BookByKmForm() {
   const [notice, setNotice] = useState<string | null>(null);
   const [loadingCalc, setLoadingCalc] = useState(false);
 
-  // validation / capacity notification
   useEffect(() => {
     const car = CAR_OPTIONS.find((c) => c.id === carId)!;
     if (passengers > car.capacity) {
@@ -76,7 +178,18 @@ function BookByKmForm() {
     }
   }, [carId, passengers]);
 
-  // init autocomplete after maps loaded
+  // init autocomplete AFTER Google maps script loaded
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const check = setInterval(() => {
+      if ((window as any).google && (window as any).google.maps && (window as any).google.maps.places) {
+        setMapsLoaded(true);
+        clearInterval(check);
+      }
+    }, 400);
+    return () => clearInterval(check);
+  }, []);
+
   useEffect(() => {
     if (!mapsLoaded) return;
     const g = (window as any).google;
@@ -85,8 +198,9 @@ function BookByKmForm() {
     const dropEl = dropRef.current;
     if (!pickupEl || !dropEl) return;
 
-    const pAC = new g.maps.places.Autocomplete(pickupEl, { types: ["geocode", "establishment"], componentRestrictions: {} });
-    const dAC = new g.maps.places.Autocomplete(dropEl, { types: ["geocode", "establishment"], componentRestrictions: {} });
+    // restrict suggestions to India only (country: "IN")
+    const pAC = new g.maps.places.Autocomplete(pickupEl, { types: ["geocode", "establishment"], componentRestrictions: { country: "IN" } });
+    const dAC = new g.maps.places.Autocomplete(dropEl, { types: ["geocode", "establishment"], componentRestrictions: { country: "IN" } });
 
     pAC.addListener("place_changed", () => {
       const place = pAC.getPlace();
@@ -106,18 +220,15 @@ function BookByKmForm() {
       setDrop({ address: place.formatted_address || place.name || dropEl.value, lat: place.geometry.location.lat(), lng: place.geometry.location.lng() });
     });
 
-    return () => {
-      // no easy dispose for Google autocomplete; letting GC handle
-    };
+    return () => {};
   }, [mapsLoaded]);
 
-  // compute route distance whenever pickup+drop change (and maps available)
   useEffect(() => {
     async function compute() {
       setDistanceKm(null);
       if (!mapsLoaded) return;
       if (!pickup || !drop) return;
-      if (pickup.lat === 0 && drop.lat === 0) return; // bad places
+      if (pickup.lat === 0 && drop.lat === 0) return;
       setLoadingCalc(true);
       const g = (window as any).google;
       if (!g) {
@@ -140,7 +251,6 @@ function BookByKmForm() {
           );
         });
 
-        // sum distance across legs (meters)
         let meters = 0;
         if (resp && resp.routes && resp.routes[0]) {
           const legs = resp.routes[0].legs || [];
@@ -148,7 +258,7 @@ function BookByKmForm() {
             meters += leg.distance?.value || 0;
           }
         }
-        const km = Math.round((meters / 1000) * 100) / 100; // 2 decimals
+        const km = Math.round((meters / 1000) * 100) / 100;
         setDistanceKm(km);
       } catch (err) {
         console.error("Directions error", err);
@@ -160,21 +270,16 @@ function BookByKmForm() {
     compute();
   }, [pickup, drop, mapsLoaded]);
 
-  // fare calculation
   const selectedCar = CAR_OPTIONS.find((c) => c.id === carId)!;
-  const baseFare = 0; // can add base fare if needed
   const calcFare = () => {
     if (!distanceKm) return null;
     const perKm = selectedCar.rate;
-    const raw = baseFare + distanceKm * perKm;
-    // night charge: if pickup at night — handled on server ideally; here sample note
+    const raw = distanceKm * perKm;
     return Math.round(raw);
   };
 
-  // "Continue to Book" handler (demo)
   const handleContinue = (e?: React.FormEvent) => {
     e?.preventDefault();
-    // validation
     if (passengers > selectedCar.capacity) {
       setNotice(`Selected car (${selectedCar.label}) supports up to ${selectedCar.capacity} passengers.`);
       return;
@@ -183,15 +288,13 @@ function BookByKmForm() {
       setNotice("Distance not calculated. Please enter pickup & drop using map or enter Approx distance manually.");
       return;
     }
-    // Normally: go to checkout / confirm page
     alert(`Proceeding: Car ${selectedCar.label}, distance ${distanceKm} km, fare ${formatINR(calcFare() || 0)}. (Demo)`);
   };
 
   return (
     <div className="rounded-xl border shadow-sm p-6 bg-white">
-      {/* Load maps script: handled at page-level; here we just set state if google available */}
       <div className="mb-4">
-        <h3 className="text-xl font-semibold mb-2">Book by Distance (Estimate)</h3>
+        <h3 className="text-xl font-semibold mb-2">Book By Distance (Estimate)</h3>
         <p className="text-sm text-gray-600">Select car, passengers, pickup & drop. Distance auto-calculates from Google Directions when you pick places.</p>
       </div>
 
@@ -201,14 +304,14 @@ function BookByKmForm() {
           <select value={carId} onChange={(e) => setCarId(e.target.value)} className="mt-1 block w-full border rounded px-3 py-2">
             {CAR_OPTIONS.map((c) => (
               <option key={c.id} value={c.id}>
-                {c.label} (₹{c.rate}/km) — max {c.capacity}
+                {c.label} (₹{c.rate}/km) — Max {c.capacity}
               </option>
             ))}
           </select>
         </div>
 
         <div>
-          <label className="block text-sm font-medium">Number of Passengers</label>
+          <label className="block text-sm font-medium">Number Of Passengers</label>
           <input
             type="number"
             min={1}
@@ -226,11 +329,11 @@ function BookByKmForm() {
 
         <div>
           <label className="block text-sm font-medium">Drop Location</label>
-          <input ref={dropRef} placeholder="Drop address" className="mt-1 block w-full border rounded px-3 py-2" />
+          <input ref={dropRef} placeholder="Drop Address" className="mt-1 block w-full border rounded px-3 py-2" />
         </div>
 
         <div>
-          <label className="block text-sm font-medium">Approx Distance (km) — (edit if auto not available)</label>
+          <label className="block text-sm font-medium">Approx Distance (km) — (Edit If Auto Not Available)</label>
           <input
             type="number"
             step="0.1"
@@ -239,7 +342,7 @@ function BookByKmForm() {
             placeholder="e.g. 100"
             className="mt-1 block w-full border rounded px-3 py-2"
           />
-          <div className="text-xs text-gray-500 mt-1">Auto-calculated when both pickup & drop selected (if Maps loaded). {loadingCalc ? "Calculating..." : ""}</div>
+          <div className="text-xs text-gray-500 mt-1">Auto-calculated when both pickup & drop selected (If Maps Loaded). {loadingCalc ? "Calculating..." : ""}</div>
         </div>
 
         <div>
@@ -266,10 +369,9 @@ function BookByKmForm() {
 
         <div className="flex gap-3">
           <button type="submit" className={`px-4 py-2 rounded text-white ${notice ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:opacity-95"}`} disabled={!!notice}>
-            Continue to Book
+            Continue To Book
           </button>
           <button type="button" className="px-4 py-2 rounded border" onClick={() => {
-            // reset
             setPickup(null); setDrop(null);
             if (pickupRef.current) pickupRef.current.value = "";
             if (dropRef.current) dropRef.current.value = "";
@@ -282,7 +384,7 @@ function BookByKmForm() {
         </div>
 
         <div className="text-xs text-gray-500">
-          Note: Toll & parking charges will be borne by the customer. Night charges (after 9pm) may apply (₹350). Final price confirmed on checkout.
+          Note: Toll & parking charges will be borne by the customer. Night charges (After 9pm) may apply (₹350). Final price confirmed on checkout.
         </div>
       </form>
     </div>
@@ -291,10 +393,6 @@ function BookByKmForm() {
 
 /* -------------------- Main Page -------------------- */
 export default function HomePage() {
-  // hero background: use a single image (royal look)
-  const heroImage = "/images/kashi.jpg"; // change if your file is different
-
-  // detect google maps loaded by Script tag
   const [mapsReady, setMapsReady] = useState(false);
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -307,100 +405,206 @@ export default function HomePage() {
     return () => clearInterval(interval);
   }, []);
 
+  const [plannerOpen, setPlannerOpen] = useState(false);
+  const plannerRef = useRef<HTMLDivElement | null>(null);
+
   return (
     <main className="min-h-screen font-sans">
-      {/* Load Google Maps JS with Places & Directions */}
       <Script
         strategy="afterInteractive"
         src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places&v=weekly`}
-        onLoad={() => {
-          // nothing — page hook will detect
-        }}
       />
 
-      {/* HERO */}
-      <section className="relative h-[72vh] overflow-hidden">
-        <img src={heroImage} alt="Varanasi Kashi Vishwanath" className="absolute inset-0 w-full h-full object-cover brightness-75" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-black/40"></div>
+      {/* HERO (improved) */}
+      <section
+        className="relative w-full"
+        style={{
+          backgroundImage: `url('/images/kashi.jpg')`,
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+          backgroundSize: "cover",
+          minHeight: "70vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        {/* Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black/70" />
 
-        <div className="relative z-10 max-w-6xl mx-auto px-6 py-28 text-left text-white">
-          <h1 className="font-serif text-5xl md:text-7xl leading-tight drop-shadow-lg" style={{ fontWeight: 700 }}>Discover Varanasi & Beyond</h1>
-          <p className="mt-4 text-lg md:text-2xl text-white/90 max-w-2xl">
+        <div className="relative z-10 max-w-4xl mx-auto px-6 text-center text-white">
+          <h1 className="font-serif text-5xl md:text-6xl font-extrabold drop-shadow-lg">
+            Discover Varanasi & Beyond
+          </h1>
+          <p className="mt-4 text-lg md:text-xl text-white/90">
             Trusted cabs, pilgrimage packages, local tours and curated experiences — handpicked for Kashi travellers.
           </p>
 
-          {/* quote / micro-motion */}
-          <div className="mt-6 flex items-center gap-4">
-            <a href="#services" className="bg-amber-400 text-slate-900 px-5 py-2 rounded-md font-medium shadow hover:opacity-95">Plan your trip</a>
-            <Link href="/packages" className="border border-white/30 text-white px-4 py-2 rounded-md">Browse packages</Link>
+          {/* Trust badges */}
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
+            <span className="px-4 py-1 rounded-full bg-white/10 backdrop-blur text-sm">✔ Verified Drivers</span>
+            <span className="px-4 py-1 rounded-full bg-white/10 backdrop-blur text-sm">📞 24/7 Support</span>
+            <span className="px-4 py-1 rounded-full bg-white/10 backdrop-blur text-sm">💰 Best Price Guaranteed</span>
           </div>
 
-          <div className="mt-8 flex flex-wrap gap-3 text-sm text-white/90">
-            <div className="bg-black/30 px-3 py-2 rounded">Ganga Aarti Experience</div>
-            <div className="bg-black/30 px-3 py-2 rounded">Sarnath Heritage Walk</div>
-            <div className="bg-black/30 px-3 py-2 rounded">Pilgrimage Packages</div>
-            <div className="bg-black/30 px-3 py-2 rounded">Custom Cab Tours</div>
+          {/* CTAs */}
+          <div className="mt-8 flex flex-col sm:flex-row justify-center gap-4">
+            <a
+              href="#top-trip-planner"
+              className="bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-lg font-semibold shadow-lg transform transition hover:scale-105"
+            >
+              Book Now
+            </a>
+            <a
+              href="#popular-services"
+              className="border border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-black transition"
+            >
+              Explore Packages
+            </a>
+          </div>
+
+          {/* Animated counters row */}
+          <div className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
+            <div>
+              <p className="text-3xl md:text-4xl font-bold">10,000+</p>
+              <p className="text-sm text-white/80">Trips Completed</p>
+            </div>
+            <div>
+              <p className="text-3xl md:text-4xl font-bold">500+</p>
+              <p className="text-sm text-white/80">Verified Drivers</p>
+            </div>
+            <div>
+              <p className="text-3xl md:text-4xl font-bold">4.8 ★</p>
+              <p className="text-sm text-white/80">Average Rating</p>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Popular Services */}
-      <section className="py-12 bg-white">
-        <div className="max-w-6xl mx-auto px-6">
-          <h2 className="text-3xl font-bold mb-6">Popular Services</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {PACKAGES.map((p) => (
-              <div key={p.title} className="rounded-xl overflow-hidden border hover:shadow-lg transition bg-white">
-                <div className="h-44 overflow-hidden">
-                  <img src={p.img} alt={p.title} className="w-full h-full object-cover" />
-                </div>
-                <div className="p-4">
-                  <h3 className="font-semibold text-lg">{p.title}</h3>
-                  <p className="text-sm text-gray-600 mt-2">{p.desc}</p>
-                  <div className="flex items-center justify-between mt-4">
-                    <Link href={p.href} className="bg-blue-600 text-white px-3 py-2 rounded">Book</Link>
-                    <div className="text-sm text-gray-500">Starting ₹999</div>
-                  </div>
-                </div>
+      {/* TOP TRIP PLANNER HEADER */}
+      <section id="top-trip-planner" className="py-8 px-6 bg-gradient-to-r from-amber-50 to-amber-100 border-b">
+        <div className="max-w-6xl mx-auto relative">
+          <div
+            className="rounded-3xl p-6 shadow-2xl bg-gradient-to-r from-yellow-50 to-amber-50 border transition-transform duration-200 hover:shadow-2xl hover:-translate-y-1"
+            title="Planner (hover to highlight)"
+          >
+            <div className="mb-2">
+              <span className="inline-block bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-sm font-medium">Per-Km Booking • Nationwide</span>
+            </div>
+
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+              <div className="md:flex-1">
+                <h2 className="text-3xl md:text-4xl font-bold leading-tight mb-2">Varanasi Trip Planner — Best Quotes & Curated Routes</h2>
+                <p className="text-sm md:text-lg text-gray-700 mb-2 max-w-2xl">
+                  Our Flagship Service — Personalised Itinerary, Verified Drivers, Temple Darshan Support, And The Best While-You-Are-In-Kashi Prices.
+                </p>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
-      {/* Services / Trip Planner */}
-      <section id="services" className="py-14 bg-gray-50">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2">
-              <h2 className="text-3xl font-bold mb-2">Varanasi Trip Planner</h2>
-              <p className="text-gray-600 mb-6">Choose stops (order matters), get instant price estimate and book. Designed for Kashi travellers.</p>
+              {/* --- Starting price pill + Book Now button inline --- */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                <div className="inline-block px-4 py-2 bg-white border border-amber-200 rounded-lg font-semibold text-amber-800 shadow-sm">
+                  Starting Price - @Rs11/Km
+                </div>
 
-              <div className="bg-white rounded-2xl shadow-lg p-6 border">
-                {/* Here we embed the BookByKmForm */}
-                <BookByKmForm />
+                <div className="flex flex-col items-start">
+                  <button
+                    onClick={() => window.open("/trip-planner", "_blank")}
+                    className="inline-block bg-amber-600 text-white px-5 py-2 rounded-lg font-semibold shadow hover:bg-amber-700 transform transition-transform duration-150 hover:scale-105"
+                  >
+                    Book Now
+                  </button>
+                  <div className="text-xs text-gray-600 mt-2">Book From Varanasi To Anywhere In India</div>
+                </div>
               </div>
             </div>
 
-            <aside className="w-full">
-              <div className="border rounded-lg p-4 mb-4">
-                <h4 className="font-semibold mb-2">Why book with us</h4>
-                <ul className="text-sm text-gray-700 space-y-2">
-                  <li>• Verified drivers and reliable cars</li>
-                  <li>• Transparent pricing</li>
-                  <li>• Local guides & temple darshan support</li>
-                  <li>• Easy refunds and 24/7 support</li>
-                </ul>
-              </div>
+            <div ref={plannerRef} className={`mt-6 overflow-hidden transition-[max-height] duration-700 ease-in-out ${plannerOpen ? "max-h-[1400px]" : "max-h-0"}`}>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="lg:col-span-2">
+                  <div className="bg-white rounded-2xl shadow-lg p-6 border">
+                    <BookByKmForm />
+                  </div>
+                </div>
 
-              <div className="border rounded-lg p-4 mb-4">
-                <div className="text-sm text-gray-600">Special offer</div>
-                <div className="font-semibold mt-2">10% off on 2+ stops</div>
-                <div className="text-sm text-gray-600 mt-1">Use code: <span className="font-mono">KASHI10</span></div>
-              </div>
+                <aside className="w-full">
+                  <div className="border rounded-lg p-4 mb-4">
+                    <h4 className="font-semibold mb-2">Why Book With Us</h4>
+                    <ul className="text-sm text-gray-700 space-y-2">
+                      <li>• Verified Drivers And Reliable Cars</li>
+                      <li>• Transparent Pricing</li>
+                      <li>• Local Guides & Temple Darshan Support</li>
+                      <li>• Easy Refunds And 24/7 Support</li>
+                    </ul>
+                  </div>
 
-              <a href="/contact" className="block text-center bg-sky-600 text-white py-2 rounded">Contact us</a>
-            </aside>
+                  <div className="border rounded-lg p-4 mb-4">
+                    <div className="text-sm text-gray-600">Special Offer</div>
+                    <div className="font-semibold mt-2">10% Off On 2+ Stops</div>
+                    <div className="text-sm text-gray-600 mt-1">
+                      Use Code: <span className="font-mono">KASHI10</span>
+                    </div>
+                  </div>
+
+                  <a href="/contact" className="block text-center bg-sky-600 text-white py-2 rounded">
+                    Contact Us
+                  </a>
+                </aside>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* POPULAR SERVICES (with watermark) */}
+      <section id="popular-services" className="py-12 bg-white relative overflow-hidden">
+        <BackgroundWatermark images={["/images/bw1.jpg", "/images/bw2.jpg", "/images/bw3.jpg", "/images/bw4.jpg"]} />
+
+        <div className="relative z-10 max-w-6xl mx-auto px-6">
+          <h2 className="text-3xl font-bold mb-6">Popular Services</h2>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {PACKAGES.map((p) => (
+              <Link
+                key={p.title}
+                href={p.href}
+                className="group block rounded-lg border overflow-hidden transition-transform hover:scale-[1.02] hover:shadow-2xl bg-white/95"
+                aria-label={`Open ${p.title} package`}
+              >
+                <div className="flex items-stretch h-full">
+                  <div className="w-1/3 min-h-[140px] h-full bg-gray-100 overflow-hidden relative">
+                    <ImageCarousel images={(p as any).images || []} />
+                  </div>
+
+                  <div
+                    className="w-2/3 p-4 flex flex-col justify-between relative transition-colors duration-500"
+                    style={{
+                      background: "linear-gradient(135deg, rgba(255,250,242,0.96), rgba(246,232,210,0.9))",
+                      minHeight: 140,
+                    }}
+                  >
+                    <div className="relative z-10">
+                      <h3 className="font-semibold text-lg">{p.title}</h3>
+                      <p className="text-sm text-gray-700 mt-2 line-clamp-3">{p.desc}</p>
+                    </div>
+
+                    <div className="mt-4 flex items-center justify-between relative z-10">
+                      <span className="text-sm text-gray-600">Starting ₹999</span>
+                      <span className="text-sm text-blue-700 font-medium">View Details →</span>
+                    </div>
+                  </div>
+                </div>
+
+                <style jsx>{`
+                  .group:hover div.w-2\\/3 {
+                    background: linear-gradient(
+                      135deg,
+                      rgba(255, 249, 230, 0.98),
+                      rgba(255, 230, 150, 0.95)
+                    ) !important;
+                  }
+                `}</style>
+              </Link>
+            ))}
           </div>
         </div>
       </section>
