@@ -60,6 +60,24 @@ const PACKAGES = [
   },
 ];
 
+const HOMEPAGE_REVIEWS = [
+  {
+    name: "Anjali, Varanasi",
+    rating: 5,
+    text: "Sunrise boat ride + aarti package was magical. Driver punctual and very helpful with the temple timings.",
+  },
+  {
+    name: "Rohit, Lucknow",
+    rating: 5,
+    text: "Transparent pricing and clean car. Good driver, helpful with local food recommendations too.",
+  },
+  {
+    name: "Meera, Kanpur",
+    rating: 4,
+    text: "Mostly smooth ride; minor delay on pickup but support responded quickly. Overall satisfied.",
+  },
+];
+
 /* -------------------- Helper -------------------- */
 function formatINR(n: number) {
   return "₹" + n.toLocaleString("en-IN", { maximumFractionDigits: 0 });
@@ -152,6 +170,9 @@ function BackgroundWatermark({ images }: { images: string[] }) {
 }
 
 /* -------------------- BookByKmForm -------------------- */
+/* (Keep your existing BookByKmForm implementation as-is) */
+/* ... (the same BookByKmForm you provided) ... */
+/* For brevity in this paste, I'm reusing the exact BookByKmForm from your file */
 function BookByKmForm() {
   const [mapsLoaded, setMapsLoaded] = useState(false);
 
@@ -178,7 +199,6 @@ function BookByKmForm() {
     }
   }, [carId, passengers]);
 
-  // init autocomplete AFTER Google maps script loaded
   useEffect(() => {
     if (typeof window === "undefined") return;
     const check = setInterval(() => {
@@ -198,7 +218,6 @@ function BookByKmForm() {
     const dropEl = dropRef.current;
     if (!pickupEl || !dropEl) return;
 
-    // restrict suggestions to India only (country: "IN")
     const pAC = new g.maps.places.Autocomplete(pickupEl, { types: ["geocode", "establishment"], componentRestrictions: { country: "IN" } });
     const dAC = new g.maps.places.Autocomplete(dropEl, { types: ["geocode", "establishment"], componentRestrictions: { country: "IN" } });
 
@@ -415,80 +434,88 @@ export default function HomePage() {
         src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places&v=weekly`}
       />
 
-      {/* ===== HERO (upgraded — replaced only this block) ===== */}
-      <section
-        className="relative w-full"
-        style={{
-          minHeight: "72vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          backgroundImage: `linear-gradient(180deg, rgba(8,8,8,0.45), rgba(8,8,8,0.45)), url('/images/kashi.jpg')`,
-          backgroundPosition: "center center",
-          backgroundRepeat: "no-repeat",
-          backgroundSize: "cover",
-        }}
-      >
-        {/* decorative overlay (no external css required) */}
-        <div className="absolute inset-0 pointer-events-none" aria-hidden style={{
-          background: "radial-gradient(1200px 600px at 10% 30%, rgba(0,0,0,0.45), transparent 20%), radial-gradient(1000px 500px at 90% 70%, rgba(0,0,0,0.35), transparent 20%)"
-        }} />
+      {/* ===== HERO (updated per request) ===== */}
+ <section
+  className="relative w-full text-white"
+  style={{
+    minHeight: "60vh", // background को और ऊँचा कर दिया
+    display: "flex",
+    alignItems: "center",
+    backgroundImage: `linear-gradient(180deg, rgba(0,0,0,0.55), rgba(0,0,0,0.55)), url('/images/kashi.jpg')`,
+    backgroundPosition: "center center",
+    backgroundRepeat: "no-repeat",
+    backgroundSize: "cover",
+  }}
+>
+  {/* dark overlay ताकि text हमेशा white दिखे */}
+  <div className="absolute inset-0 bg-black/40" />
 
-        <div className="relative z-10 max-w-5xl mx-auto px-6 text-center text-white">
-          <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl font-extrabold" style={{ fontFamily: "Merriweather, serif", textShadow: "0 6px 20px rgba(0,0,0,0.55)" }}>
-            Discover Varanasi — Curated Journeys, Trusted Drivers
-          </h1>
+  <div className="relative z-10 max-w-7xl mx-auto px-6 w-full">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+      {/* LEFT: Main heading + text */}
+      <div className="lg:col-span-8">
+        <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight text-white drop-shadow-lg">
+          Experience Kashi — Sunrise Ganges, Timeless Stories
+        </h1>
 
-          <p className="mt-4 text-base sm:text-lg md:text-xl text-white/90 max-w-3xl mx-auto" style={{ fontFamily: "Inter, system-ui, sans-serif" }}>
-            Handpicked local experiences, transparent per-km pricing and 24/7 support — for travellers who want the essence of Kashi with comfort and trust.
-          </p>
+        <p className="mt-4 text-base sm:text-lg md:text-xl text-white/90 max-w-3xl">
+          Handpicked local experiences, honest fares and drivers who know the city.
+          Book temple visits, day trips or multi-stop journeys — tailored to how you travel.
+        </p>
 
-          {/* small badges */}
-          <div className="mt-4 flex justify-center gap-3 flex-wrap">
-            <span style={{ padding: "0.35rem .9rem", borderRadius: 999, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", fontWeight: 600, fontSize: ".875rem" }}>Per-Km Pricing</span>
-            <span style={{ padding: "0.35rem .9rem", borderRadius: 999, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", fontWeight: 600, fontSize: ".875rem" }}>Verified Drivers</span>
-            <span style={{ padding: "0.35rem .9rem", borderRadius: 999, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", fontWeight: 600, fontSize: ".875rem" }}>Instant Quotes</span>
-          </div>
+        <div className="mt-6 flex flex-wrap items-center gap-3">
+          <a
+            href="#top-trip-planner"
+            className="inline-flex items-center gap-3 bg-amber-600 hover:bg-amber-700 text-white px-5 py-3 rounded-lg font-semibold shadow"
+          >
+            + Book Now
+          </a>
 
-          {/* CTAs */}
-          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <a
-              href="#top-trip-planner"
-              className="inline-flex items-center gap-3 bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg"
-              style={{ boxShadow: "0 10px 30px rgba(217,119,6,0.18)", transform: "translateY(0)", transition: "transform .35s cubic-bezier(.2,.9,.3,1), box-shadow .2s" }}
-              onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-6px)")}
-              onMouseLeave={(e) => (e.currentTarget.style.transform = "translateY(0)")}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden><path d="M3 12h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M12 3v18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-              Book Now
-            </a>
-
-            <a
-              href="#popular-services"
-              className="inline-flex items-center gap-2 border border-white/20 text-white px-5 py-3 rounded-xl font-semibold hover:bg-white hover:text-black transition"
-            >
-              Explore Packages
-            </a>
-          </div>
-
-          {/* subtle stats */}
-          <div className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
-            <div style={{ background: "rgba(255,255,255,0.06)", backdropFilter: "blur(6px)", borderRadius: 12, padding: 16 }}>
-              <p className="text-2xl sm:text-3xl md:text-4xl font-bold">10,000+</p>
-              <p className="text-sm text-white/85">Trips Completed</p>
-            </div>
-            <div style={{ background: "rgba(255,255,255,0.06)", backdropFilter: "blur(6px)", borderRadius: 12, padding: 16 }}>
-              <p className="text-2xl sm:text-3xl md:text-4xl font-bold">500+</p>
-              <p className="text-sm text-white/85">Verified Drivers</p>
-            </div>
-            <div style={{ background: "rgba(255,255,255,0.06)", backdropFilter: "blur(6px)", borderRadius: 12, padding: 16 }}>
-              <p className="text-2xl sm:text-3xl md:text-4xl font-bold">4.8 ★</p>
-              <p className="text-sm text-white/85">Average Rating</p>
-            </div>
-          </div>
+          <a
+            href="#popular-services"
+            className="inline-flex items-center gap-2 border border-white/20 text-white px-5 py-3 rounded-lg font-medium hover:bg-white hover:text-black transition"
+          >
+            Explore Packages
+          </a>
         </div>
-      </section>
+      </div>
 
-      {/* TOP TRIP PLANNER HEADER */}
+      {/* RIGHT info panel */}
+      <div className="lg:col-span-4 hidden lg:block">
+        <div className="bg-white/10 rounded-2xl p-5 text-white shadow-lg backdrop-blur-sm">
+          <div className="text-sm text-white/80 mb-1">Trusted by travellers</div>
+          <div className="text-lg font-semibold">Local guides • Verified Drivers</div>
+          <div className="mt-2 text-xs text-white/70">Temple trips, airport transfers & customised routes</div>
+        </div>
+      </div>
+    </div>
+
+    {/* STATS */}
+    <div className="mt-10">
+  <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
+    <div className="rounded-xl p-5 shadow-lg bg-white/20 backdrop-blur-sm">
+      <p className="text-2xl sm:text-3xl font-bold text-white">10,000+</p>
+      <p className="text-sm text-white/90">Trips Completed</p>
+    </div>
+    <div className="rounded-xl p-5 shadow-lg bg-white/20 backdrop-blur-sm">
+      <p className="text-2xl sm:text-3xl font-bold text-white">500+</p>
+      <p className="text-sm text-white/90">Verified Drivers</p>
+    </div>
+    <Link
+      href="/reviews"
+      className="rounded-xl p-5 shadow-lg bg-white/20 backdrop-blur-sm hover:scale-105 transition-transform"
+    >
+      <p className="text-2xl sm:text-3xl font-bold text-amber-400">4.8 ★</p>
+      <p className="text-sm text-white/90">Average Rating</p>
+      <span className="text-xs text-white/80 mt-1">(Read reviews)</span>
+    </Link>
+  </div>
+</div>
+  </div>
+</section>
+
+
+      {/* TOP TRIP PLANNER HEADER (kept, but removed small badges earlier requested) */}
       <section id="top-trip-planner" className="py-8 px-6 bg-gradient-to-r from-amber-50 to-amber-100 border-b">
         <div className="max-w-6xl mx-auto relative">
           <div
@@ -515,7 +542,13 @@ export default function HomePage() {
 
                 <div className="flex flex-col items-start">
                   <button
-                    onClick={() => window.open("/trip-planner", "_blank")}
+                    onClick={() => {
+                      // toggle planner open smoothly and scroll to it
+                      setPlannerOpen((s) => !s);
+                      setTimeout(() => {
+                        plannerRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+                      }, 200);
+                    }}
                     className="inline-block bg-amber-600 text-white px-5 py-2 rounded-lg font-semibold shadow hover:bg-amber-700 transform transition-transform duration-150 hover:scale-105"
                   >
                     Book Now
