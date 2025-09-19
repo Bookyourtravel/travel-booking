@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import Script from "next/script";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 
 /* -------------------- Types -------------------- */
 type CarOption = {
@@ -11,8 +11,6 @@ type CarOption = {
   rate: number; // ₹ per km
   capacity: number; // max passengers
 };
-
-type PlaceResultLite = { address: string; lat: number; lng: number } | null;
 
 /* -------------------- Data -------------------- */
 const CAR_OPTIONS: CarOption[] = [
@@ -78,12 +76,12 @@ const HOMEPAGE_REVIEWS = [
   },
 ];
 
-/* -------------------- Helper -------------------- */
+/* -------------------- Helpers -------------------- */
 function formatINR(n: number) {
   return "₹" + n.toLocaleString("en-IN", { maximumFractionDigits: 0 });
 }
 
-/* ---------------- ImageCarousel ---------------- */
+/* ---------------- ImageCarousel (simple) ---------------- */
 function ImageCarousel({ images }: { images: string[] }) {
   const [idx, setIdx] = useState(0);
 
@@ -99,10 +97,13 @@ function ImageCarousel({ images }: { images: string[] }) {
         images.map((src, i) => {
           const active = i === idx;
           return (
+            // eslint-disable-next-line @next/next/no-img-element
             <img
               key={i}
               src={src}
               alt={`slide-${i}`}
+              loading="lazy"
+              decoding="async"
               style={{
                 position: "absolute",
                 top: 0,
@@ -137,13 +138,13 @@ function ImageCarousel({ images }: { images: string[] }) {
   );
 }
 
-/* ---------------- BackgroundWatermark ---------------- */
+/* ---------------- Background watermark images ---------------- */
 function BackgroundWatermark({ images }: { images: string[] }) {
   const [idx, setIdx] = useState(0);
 
   useEffect(() => {
     if (!images || images.length <= 1) return;
-    const t = setInterval(() => setIdx((i) => (i + 1) % images.length), 22000); // slow fade
+    const t = setInterval(() => setIdx((i) => (i + 1) % images.length), 22000);
     return () => clearInterval(t);
   }, [images]);
 
@@ -152,6 +153,7 @@ function BackgroundWatermark({ images }: { images: string[] }) {
       {images.map((src, i) => {
         const active = i === idx;
         return (
+          // eslint-disable-next-line @next/next/no-img-element
           <img
             key={i}
             src={src}
@@ -169,26 +171,14 @@ function BackgroundWatermark({ images }: { images: string[] }) {
   );
 }
 
-/* -------------------- BookByKmForm -------------------- */
-/* (Keep your existing BookByKmForm implementation as-is) */
-/* ... (the same BookByKmForm you provided) ... */
-/* For brevity in this paste, I'm reusing the exact BookByKmForm from your file */
-function BookByKmForm() {
-  const [mapsLoaded, setMapsLoaded] = useState(false);
-
-  const [pickup, setPickup] = useState<PlaceResultLite>(null);
-  const [drop, setDrop] = useState<PlaceResultLite>(null);
-
-  const pickupRef = useRef<HTMLInputElement | null>(null);
-  const dropRef = useRef<HTMLInputElement | null>(null);
-
+/* ---------------- BookByKmFormNoLocation (embedded) ---------------- */
+function BookByKmFormNoLocation() {
   const [carId, setCarId] = useState<string>(CAR_OPTIONS[2].id); // default Swift
   const [passengers, setPassengers] = useState<number>(1);
-  const [distanceKm, setDistanceKm] = useState<number | null>(null); // calculated
+  const [distanceKm, setDistanceKm] = useState<number | null>(null);
   const [tripType, setTripType] = useState<"oneway" | "round">("oneway");
 
   const [notice, setNotice] = useState<string | null>(null);
-  const [loadingCalc, setLoadingCalc] = useState(false);
 
   useEffect(() => {
     const car = CAR_OPTIONS.find((c) => c.id === carId)!;
@@ -198,96 +188,6 @@ function BookByKmForm() {
       setNotice(null);
     }
   }, [carId, passengers]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const check = setInterval(() => {
-      if ((window as any).google && (window as any).google.maps && (window as any).google.maps.places) {
-        setMapsLoaded(true);
-        clearInterval(check);
-      }
-    }, 400);
-    return () => clearInterval(check);
-  }, []);
-
-  useEffect(() => {
-    if (!mapsLoaded) return;
-    const g = (window as any).google;
-    if (!g) return;
-    const pickupEl = pickupRef.current;
-    const dropEl = dropRef.current;
-    if (!pickupEl || !dropEl) return;
-
-    const pAC = new g.maps.places.Autocomplete(pickupEl, { types: ["geocode", "establishment"], componentRestrictions: { country: "IN" } });
-    const dAC = new g.maps.places.Autocomplete(dropEl, { types: ["geocode", "establishment"], componentRestrictions: { country: "IN" } });
-
-    pAC.addListener("place_changed", () => {
-      const place = pAC.getPlace();
-      if (!place.geometry) {
-        setPickup({ address: place.name || pickupEl.value, lat: 0, lng: 0 });
-        return;
-      }
-      setPickup({ address: place.formatted_address || place.name || pickupEl.value, lat: place.geometry.location.lat(), lng: place.geometry.location.lng() });
-    });
-
-    dAC.addListener("place_changed", () => {
-      const place = dAC.getPlace();
-      if (!place.geometry) {
-        setDrop({ address: place.name || dropEl.value, lat: 0, lng: 0 });
-        return;
-      }
-      setDrop({ address: place.formatted_address || place.name || dropEl.value, lat: place.geometry.location.lat(), lng: place.geometry.location.lng() });
-    });
-
-    return () => {};
-  }, [mapsLoaded]);
-
-  useEffect(() => {
-    async function compute() {
-      setDistanceKm(null);
-      if (!mapsLoaded) return;
-      if (!pickup || !drop) return;
-      if (pickup.lat === 0 && drop.lat === 0) return;
-      setLoadingCalc(true);
-      const g = (window as any).google;
-      if (!g) {
-        setLoadingCalc(false);
-        return;
-      }
-      const directionsService = new g.maps.DirectionsService();
-      try {
-        const resp = await new Promise<any>((resolve, reject) => {
-          directionsService.route(
-            {
-              origin: { lat: pickup.lat, lng: pickup.lng },
-              destination: { lat: drop.lat, lng: drop.lng },
-              travelMode: g.maps.TravelMode.DRIVING,
-            },
-            (result: any, status: any) => {
-              if (status === "OK") resolve(result);
-              else reject(status);
-            }
-          );
-        });
-
-        let meters = 0;
-        if (resp && resp.routes && resp.routes[0]) {
-          const legs = resp.routes[0].legs || [];
-          for (const leg of legs) {
-            meters += leg.distance?.value || 0;
-          }
-        }
-        const km = Math.round((meters / 1000) * 100) / 100;
-        setDistanceKm(km);
-      } catch (err) {
-        console.error("Directions error", err);
-        setDistanceKm(null);
-      } finally {
-        setLoadingCalc(false);
-      }
-    }
-    compute();
-  }, [pickup, drop, mapsLoaded]);
 
   const selectedCar = CAR_OPTIONS.find((c) => c.id === carId)!;
   const calcFare = () => {
@@ -303,18 +203,27 @@ function BookByKmForm() {
       setNotice(`Selected car (${selectedCar.label}) supports up to ${selectedCar.capacity} passengers.`);
       return;
     }
-    if (!distanceKm) {
-      setNotice("Distance not calculated. Please enter pickup & drop using map or enter Approx distance manually.");
+    if (!distanceKm || distanceKm <= 0) {
+      setNotice("Please enter an approximate distance in kilometres.");
       return;
     }
+    // demo behaviour: show a confirm
     alert(`Proceeding: Car ${selectedCar.label}, distance ${distanceKm} km, fare ${formatINR(calcFare() || 0)}. (Demo)`);
+  };
+
+  const reset = () => {
+    setCarId(CAR_OPTIONS[2].id);
+    setPassengers(1);
+    setDistanceKm(null);
+    setTripType("oneway");
+    setNotice(null);
   };
 
   return (
     <div className="rounded-xl border shadow-sm p-6 bg-white">
       <div className="mb-4">
-        <h3 className="text-xl font-semibold mb-2">Book By Distance (Estimate)</h3>
-        <p className="text-sm text-gray-600">Select car, passengers, pickup & drop. Distance auto-calculates from Google Directions when you pick places.</p>
+        <h3 className="text-xl font-semibold mb-2">Book By Distance (Manual)</h3>
+        <p className="text-sm text-gray-600">Enter estimated distance in kilometres — no location or maps needed.</p>
       </div>
 
       <form onSubmit={handleContinue} className="space-y-4">
@@ -342,17 +251,7 @@ function BookByKmForm() {
         </div>
 
         <div>
-          <label className="block text-sm font medium">Pickup Location</label>
-          <input ref={pickupRef} placeholder="Hotel / Railway Station / Address" className="mt-1 block w-full border rounded px-3 py-2" />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium">Drop Location</label>
-          <input ref={dropRef} placeholder="Drop Address" className="mt-1 block w-full border rounded px-3 py-2" />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium">Approx Distance (km) — (Edit If Auto Not Available)</label>
+          <label className="block text-sm font-medium">Approx Distance (km)</label>
           <input
             type="number"
             step="0.1"
@@ -361,7 +260,7 @@ function BookByKmForm() {
             placeholder="e.g. 100"
             className="mt-1 block w-full border rounded px-3 py-2"
           />
-          <div className="text-xs text-gray-500 mt-1">Auto-calculated when both pickup & drop selected (If Maps Loaded). {loadingCalc ? "Calculating..." : ""}</div>
+          <div className="text-xs text-gray-500 mt-1">Provide an approximate distance — useful when you want a quick quote without sharing locations.</div>
         </div>
 
         <div>
@@ -390,16 +289,7 @@ function BookByKmForm() {
           <button type="submit" className={`px-4 py-2 rounded text-white ${notice ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:opacity-95"}`} disabled={!!notice}>
             Continue To Book
           </button>
-          <button type="button" className="px-4 py-2 rounded border" onClick={() => {
-            setPickup(null); setDrop(null);
-            if (pickupRef.current) pickupRef.current.value = "";
-            if (dropRef.current) dropRef.current.value = "";
-            setDistanceKm(null);
-            setPassengers(1);
-            setCarId(CAR_OPTIONS[2].id);
-            setTripType("oneway");
-            setNotice(null);
-          }}>Reset</button>
+          <button type="button" className="px-4 py-2 rounded border" onClick={reset}>Reset</button>
         </div>
 
         <div className="text-xs text-gray-500">
@@ -410,112 +300,264 @@ function BookByKmForm() {
   );
 }
 
-/* -------------------- Main Page -------------------- */
-export default function HomePage() {
-  const [mapsReady, setMapsReady] = useState(false);
+/* ---------------- HoverBloom component — steam/bubble effect ---------------- */
+function HoverBloom({
+  trigger,
+  items,
+  colorSeed,
+  maxBubbles = 10,
+}: {
+  trigger: boolean;
+  items: string[];
+  colorSeed?: string;
+  maxBubbles?: number;
+}) {
+  // create N bubbles with random properties derived from index & seed
+  const bubbles = React.useMemo(() => {
+    const arr = [];
+    for (let i = 0; i < Math.min(maxBubbles, items.length); i++) {
+      const t = Math.random();
+      arr.push({
+        id: `${i}-${Math.round(Math.random() * 10000)}`,
+        text: items[i],
+        size: 36 + Math.round(Math.random() * 30),
+        // horizontal offset range -120..120
+        x: Math.round((Math.random() - 0.5) * 220),
+        // starting vertical offset near center
+        yStart: 10 + Math.round(Math.random() * 10),
+        // upward distance
+        yEnd: -120 - Math.round(Math.random() * 160),
+        delay: Math.random() * 0.5,
+        duration: 2 + Math.random() * 2.2,
+        hue: Math.round(20 + Math.random() * 200), // for color variance
+      });
+    }
+    return arr;
+  }, [items, maxBubbles]);
+
+  return (
+    <div className="pointer-events-none absolute inset-0 z-30">
+      <AnimatePresence>
+        {trigger &&
+          bubbles.map((b) => (
+            <motion.div
+              key={b.id}
+              initial={{ opacity: 0, y: b.yStart, scale: 0.6 }}
+              animate={{ opacity: [0, 1, 0.9], y: b.yEnd, scale: [0.9, 1, 1.05] }}
+              exit={{ opacity: 0, scale: 0.5 }}
+              transition={{ duration: b.duration, delay: b.delay, ease: "easeOut" }}
+              style={{
+                left: `calc(50% + ${b.x}px)`,
+                top: `calc(50% + ${b.yStart}px)`,
+                position: "absolute",
+                transform: "translate(-50%, -50%)",
+                borderRadius: 9999,
+                padding: "6px 10px",
+                fontSize: Math.max(11, Math.round(b.size / 6)),
+                whiteSpace: "nowrap",
+                backdropFilter: "blur(6px)",
+                background: `linear-gradient(180deg, hsla(${b.hue},80%,55%,0.95), hsla(${(b.hue + 40) % 360},70%,45%,0.85))`,
+                color: "white",
+                boxShadow: "0 6px 20px rgba(0,0,0,0.18)",
+              }}
+            >
+              {b.text}
+            </motion.div>
+          ))}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+/* ---------------- StatsBox with hover => bloom + continuous steam micro-bubbles ---------------- */
+function StatsBox() {
+  // expanded lists — 50+ unique cities and 50+ unique drivers
+  const tripsCities = [
+    "Varanasi","Prayagraj","Ujjain","Haridwar","Ayodhya","Lucknow","Kanpur","Mirzapur","Gorakhpur","Jhansi",
+    "Allahabad","Mahoba","Amethi","Bhadohi","Sant Kabir Nagar","Gonda","Raebareli","Faizabad","Sultanpur","Banda",
+    "Sitapur","Basti","Azamgarh","Ballia","Deoria","Shahjahanpur","Farrukhabad","Mainpuri","Agra","Aligarh",
+    "Moradabad","Bareilly","Hapur","Ghaziabad","Noida","Ghazipur","Muzaffarnagar","Saharanpur","Meerut","Mathura",
+    "Etawah","Chitrakoot","Sambhal","Rampur","Bareilly","Orai","Bijnor","Bulandshahr","Nadia","RaeBareli","Pilibhit","Uttarpara"
+  ].slice(0, 50); // ensure length
+
+  const driverNames = [
+    "Sanjay","Ravi","Arun","Manish","Vijay","Ankit","Deepak","Amit","Pooja","Kavita",
+    "Neeraj","Ritu","Sunita","Rohit","Meera","Kiran","Vandana","Gaurav","Nitin","Suresh",
+    "Pradeep","Alok","Sudeep","Harish","Sachin","Pankaj","Rakesh","Shyam","Kunal","Raghav",
+    "Sandeep","Mohit","Akhilesh","Rajesh","Hemant","Devendra","Brijesh","Anurag","Yogesh","Tarun",
+    "Prashant","Ashish","Bhupendra","Nilesh","Subhash","Jitendra","Lokesh","Dinesh","Saurabh","Milind"
+  ].slice(0, 50);
+
+  // hover state controls
+  const [hoverTrips, setHoverTrips] = useState(false);
+  const [hoverDrivers, setHoverDrivers] = useState(false);
+
+  // continuous gentle rising micro-bubbles behind the boxes (steam)
+  // We'll render small translucent bubbles with random x offsets that animate upward and disappear, repeating while not hovered.
+  const [steamTokens, setSteamTokens] = useState<{ id: string; left: number; size: number; delay: number; duration: number; hue: number }[]>([]);
+
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    const interval = setInterval(() => {
-      if ((window as any).google && (window as any).google.maps && (window as any).google.maps.places) {
-        setMapsReady(true);
-        clearInterval(interval);
-      }
-    }, 500);
-    return () => clearInterval(interval);
+    let mounted = true;
+    const gen = () => {
+      // keep a pool of ~8 tokens
+      setSteamTokens((prev) => {
+        const next = prev.filter(Boolean);
+        while (next.length < 8) {
+          next.push({
+            id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+            left: Math.round(Math.random() * 80) + 10, // percent
+            size: Math.round(12 + Math.random() * 28),
+            delay: Math.random() * 1.5,
+            duration: 3 + Math.random() * 4,
+            hue: Math.round(20 + Math.random() * 200),
+          });
+        }
+        return next;
+      });
+      if (!mounted) return;
+      setTimeout(gen, 2200 + Math.random() * 1600);
+    };
+    gen();
+    return () => {
+      mounted = false;
+    };
   }, []);
 
+  return (
+    <div className="relative">
+      {/* steam micro-bubbles layer (positioned behind) */}
+      <div className="absolute inset-0 pointer-events-none z-0">
+        {steamTokens.map((s) => (
+          <motion.div
+            key={s.id}
+            initial={{ opacity: 0, y: 30, scale: 0.6 }}
+            animate={{ opacity: [0, 0.6, 0], y: -120, scale: 1.1 }}
+            transition={{ delay: s.delay, duration: s.duration, ease: "easeOut" }}
+            style={{
+              position: "absolute",
+              left: `${s.left}%`,
+              bottom: 12,
+              width: s.size * 1.6,
+              height: s.size * 1.6,
+              borderRadius: 9999,
+              background: `radial-gradient(circle at 30% 30%, rgba(255,255,255,0.15), rgba(255,255,255,0.02))`,
+              transform: "translateX(-50%)",
+              filter: "blur(6px)",
+              boxShadow: "inset 0 -6px 18px rgba(0,0,0,0.08)",
+            }}
+          />
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center mt-10 items-center relative z-10">
+        {/* Trips Completed */}
+        <div
+          className="relative rounded-xl p-6 shadow-lg bg-white/10 backdrop-blur-sm cursor-default overflow-visible"
+          onMouseEnter={() => { setHoverTrips(true); }}
+          onMouseLeave={() => { setHoverTrips(false); }}
+        >
+          <p className="text-2xl sm:text-3xl font-bold text-white">10,000+</p>
+          <p className="text-sm text-white/90">Trips Completed</p>
+
+          {/* Hover bloom */}
+          <HoverBloom trigger={hoverTrips} items={tripsCities} colorSeed="amber" maxBubbles={10} />
+        </div>
+
+        {/* Verified Drivers */}
+        <div
+          className="relative rounded-xl p-6 shadow-lg bg-white/10 backdrop-blur-sm cursor-default overflow-visible"
+          onMouseEnter={() => { setHoverDrivers(true); }}
+          onMouseLeave={() => { setHoverDrivers(false); }}
+        >
+          <p className="text-2xl sm:text-3xl font-bold text-white">500+</p>
+          <p className="text-sm text-white/90">Verified Drivers</p>
+
+          {/* Hover bloom */}
+          <HoverBloom trigger={hoverDrivers} items={driverNames} colorSeed="sky" maxBubbles={10} />
+        </div>
+
+        {/* Rating */}
+        <Link
+          href="/reviews"
+          className="rounded-xl p-6 shadow-lg bg-white/10 backdrop-blur-sm hover:scale-105 transition-transform"
+        >
+          <p className="text-2xl sm:text-3xl font-bold text-amber-400">4.8 ★</p>
+          <p className="text-sm text-white/90">Average Rating</p>
+          <span className="text-xs text-white/80 mt-1">(Read reviews)</span>
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+/* -------------------- Main Page -------------------- */
+export default function HomePage() {
   const [plannerOpen, setPlannerOpen] = useState(false);
   const plannerRef = useRef<HTMLDivElement | null>(null);
 
   return (
     <main className="min-h-screen font-sans">
-      <Script
-        strategy="afterInteractive"
-        src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places&v=weekly`}
-      />
+      {/* ===== HERO ===== */}
+      <section
+        className="relative w-full text-white"
+        style={{
+          minHeight: "60vh",
+          display: "flex",
+          alignItems: "center",
+          backgroundImage: `linear-gradient(180deg, rgba(0,0,0,0.55), rgba(0,0,0,0.55)), url('/images/kashi.jpg')`,
+          backgroundPosition: "center center",
+          backgroundRepeat: "no-repeat",
+          backgroundSize: "cover",
+        }}
+      >
+        <div className="absolute inset-0 bg-black/40" />
 
-      {/* ===== HERO (updated per request) ===== */}
- <section
-  className="relative w-full text-white"
-  style={{
-    minHeight: "60vh", // background को और ऊँचा कर दिया
-    display: "flex",
-    alignItems: "center",
-    backgroundImage: `linear-gradient(180deg, rgba(0,0,0,0.55), rgba(0,0,0,0.55)), url('/images/kashi.jpg')`,
-    backgroundPosition: "center center",
-    backgroundRepeat: "no-repeat",
-    backgroundSize: "cover",
-  }}
->
-  {/* dark overlay ताकि text हमेशा white दिखे */}
-  <div className="absolute inset-0 bg-black/40" />
+        <div className="relative z-10 max-w-7xl mx-auto px-6 w-full">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+            <div className="lg:col-span-8">
+              <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight text-white drop-shadow-lg">
+                Experience Kashi — Sunrise Ganges, Timeless Stories
+              </h1>
 
-  <div className="relative z-10 max-w-7xl mx-auto px-6 w-full">
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-      {/* LEFT: Main heading + text */}
-      <div className="lg:col-span-8">
-        <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight text-white drop-shadow-lg">
-          Experience Kashi — Sunrise Ganges, Timeless Stories
-        </h1>
+              <p className="mt-4 text-base sm:text-lg md:text-xl text-white/90 max-w-3xl">
+                Handpicked local experiences, honest fares and drivers who know the city.
+                Book temple visits, day trips or multi-stop journeys — tailored to how you travel.
+              </p>
 
-        <p className="mt-4 text-base sm:text-lg md:text-xl text-white/90 max-w-3xl">
-          Handpicked local experiences, honest fares and drivers who know the city.
-          Book temple visits, day trips or multi-stop journeys — tailored to how you travel.
-        </p>
+              <div className="mt-6 flex flex-wrap items-center gap-3">
+                <a
+                  href="#top-trip-planner"
+                  className="inline-flex items-center gap-3 bg-amber-600 hover:bg-amber-700 text-white px-5 py-3 rounded-lg font-semibold shadow"
+                >
+                  + Book Now
+                </a>
 
-        <div className="mt-6 flex flex-wrap items-center gap-3">
-          <a
-            href="#top-trip-planner"
-            className="inline-flex items-center gap-3 bg-amber-600 hover:bg-amber-700 text-white px-5 py-3 rounded-lg font-semibold shadow"
-          >
-            + Book Now
-          </a>
+                <a
+                  href="#popular-services"
+                  className="inline-flex items-center gap-2 border border-white/20 text-white px-5 py-3 rounded-lg font-medium hover:bg-white hover:text-black transition"
+                >
+                  Explore Packages
+                </a>
+              </div>
+            </div>
 
-          <a
-            href="#popular-services"
-            className="inline-flex items-center gap-2 border border-white/20 text-white px-5 py-3 rounded-lg font-medium hover:bg-white hover:text-black transition"
-          >
-            Explore Packages
-          </a>
+            <div className="lg:col-span-4 hidden lg:block">
+              <div className="bg-white/10 rounded-2xl p-5 text-white shadow-lg backdrop-blur-sm">
+                <div className="text-sm text-white/80 mb-1">Trusted by travellers</div>
+                <div className="text-lg font-semibold">Local guides • Verified Drivers</div>
+                <div className="mt-2 text-xs text-white/70">Temple trips, airport transfers & customised routes</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-10">
+            {/* REPLACED small stats area with StatsBox */}
+            <StatsBox />
+          </div>
         </div>
-      </div>
+      </section>
 
-      {/* RIGHT info panel */}
-      <div className="lg:col-span-4 hidden lg:block">
-        <div className="bg-white/10 rounded-2xl p-5 text-white shadow-lg backdrop-blur-sm">
-          <div className="text-sm text-white/80 mb-1">Trusted by travellers</div>
-          <div className="text-lg font-semibold">Local guides • Verified Drivers</div>
-          <div className="mt-2 text-xs text-white/70">Temple trips, airport transfers & customised routes</div>
-        </div>
-      </div>
-    </div>
-
-    {/* STATS */}
-    <div className="mt-10">
-  <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
-    <div className="rounded-xl p-5 shadow-lg bg-white/20 backdrop-blur-sm">
-      <p className="text-2xl sm:text-3xl font-bold text-white">10,000+</p>
-      <p className="text-sm text-white/90">Trips Completed</p>
-    </div>
-    <div className="rounded-xl p-5 shadow-lg bg-white/20 backdrop-blur-sm">
-      <p className="text-2xl sm:text-3xl font-bold text-white">500+</p>
-      <p className="text-sm text-white/90">Verified Drivers</p>
-    </div>
-    <Link
-      href="/reviews"
-      className="rounded-xl p-5 shadow-lg bg-white/20 backdrop-blur-sm hover:scale-105 transition-transform"
-    >
-      <p className="text-2xl sm:text-3xl font-bold text-amber-400">4.8 ★</p>
-      <p className="text-sm text-white/90">Average Rating</p>
-      <span className="text-xs text-white/80 mt-1">(Read reviews)</span>
-    </Link>
-  </div>
-</div>
-  </div>
-</section>
-
-
-      {/* TOP TRIP PLANNER HEADER (kept, but removed small badges earlier requested) */}
+      {/* TOP TRIP PLANNER */}
       <section id="top-trip-planner" className="py-8 px-6 bg-gradient-to-r from-amber-50 to-amber-100 border-b">
         <div className="max-w-6xl mx-auto relative">
           <div
@@ -534,7 +576,6 @@ export default function HomePage() {
                 </p>
               </div>
 
-              {/* --- Starting price pill + Book Now button inline --- */}
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
                 <div className="inline-block px-4 py-2 bg-white border border-amber-200 rounded-lg font-semibold text-amber-800 shadow-sm">
                   Starting Price - @Rs11/Km
@@ -543,7 +584,6 @@ export default function HomePage() {
                 <div className="flex flex-col items-start">
                   <button
                     onClick={() => {
-                      // toggle planner open smoothly and scroll to it
                       setPlannerOpen((s) => !s);
                       setTimeout(() => {
                         plannerRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -562,7 +602,7 @@ export default function HomePage() {
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2">
                   <div className="bg-white rounded-2xl shadow-lg p-6 border">
-                    <BookByKmForm />
+                    <BookByKmFormNoLocation />
                   </div>
                 </div>
 
@@ -595,7 +635,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* POPULAR SERVICES (with watermark) */}
+      {/* POPULAR SERVICES */}
       <section id="popular-services" className="py-12 bg-white relative overflow-hidden">
         <BackgroundWatermark images={["/images/bw1.jpg", "/images/bw2.jpg", "/images/bw3.jpg", "/images/bw4.jpg"]} />
 
