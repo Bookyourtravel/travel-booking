@@ -1,372 +1,362 @@
 // app/components/BookByKmForm.jsx
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
-/* ---------- helper ---------- */
-function generateRef() {
-  const d = new Date();
-  const date = d.toISOString().slice(0, 10).replace(/-/g, "");
-  const suffix = Math.floor(Math.random() * 9000) + 1000;
-  return `BYT-${date}-${suffix}`;
-}
+/**
+ * BookByKmForm.jsx
+ * - English messages
+ * - Destination autocomplete (lots of India cities & airports)
+ * - Phone (>=10 digits) & email validation with inline error messages
+ * - Confirmation modal + WhatsApp open
+ *
+ * Paste this file at: app/components/BookByKmForm.jsx
+ */
 
-const LUGGAGE_TYPES = [
-  { value: "none", label: "No luggage" },
-  { value: "backpack_5kg", label: "Small / Backpack (≈5kg)" },
-  { value: "trolley_5kg", label: "Trolley small (≈5kg)" },
-  { value: "medium_7kg", label: "Medium (≈7kg)" },
-  { value: "duffel", label: "Duffel bag (clothes)" },
-  { value: "large_15kg", label: "Large (≈15kg)" },
+/* ----------------------- Config ----------------------- */
+// Replace with your actual support contact
+const SUPPORT_PHONE = "+919389971003"; // keep + or +91...
+const SUPPORT_EMAIL = "shivam211019@gmail.com";
+
+/* -------------------- Big India cities + airports --------------------
+   This list is large but not exhaustive. Add more strings if needed.
+   Suggestions will filter after user types 2+ chars.
+*/
+const INDIA_CITIES = [
+  "Agartala","Agra","Ahmedabad","Aizawl","Ajmer","Alappuzha","Aligarh","Allahabad","Alwar","Amaravati",
+  "Ambala","Amritsar","Anantapur","Ankleshwar","Ara","Ariyalur","Asansol","Aurangabad","Baleshwar","Ballari",
+  "Balasore","Bareilly","Baripada","Beawar","Belgaum","Bengaluru","Berhampur","Bhagalpur","Bharatpur","Bhatinda",
+  "Bhavnagar","Bhilai","Bhilwara","Bhopal","Bhubaneswar","Bhuj","Bijapur","Bikaner","Bilaspur","Chandigarh",
+  "Chennai","Chhapra","Chikhli","Cooch Behar","Coimbatore","Cuttack","Daman","Darbhanga","Darjeeling","Dehradun",
+  "Delhi","Dhanbad","Dharwad","Dindigul","Dibrugarh","Diu","Durgapur","Eluru","Erode","Faridabad","Farrukhabad",
+  "Fatehpur","Gandhinagar","Gangtok","Gaya","Ghaziabad","Gorakhpur","Gulbarga","Guna","Gurdaspur","Guwahati",
+  "Gwalior","Haldwani","Hampi","Harda","Hassan","Hazaribagh","Himachal Pradesh (State)","Hooghly","Hubli","Hyderabad",
+  "Imphal","Indore","Itanagar","Jabalpur","Jaipur","Jalandhar","Jalgaon","Jalna","Jammu","Jamnagar","Jamshedpur",
+  "Jhansi","Jodhpur","Kakinada","Kanchipuram","Kannur","Kanpur","Karimnagar","Karnal","Kavaratti","Khandwa",
+  "Kochi (Cochin)","Kohima","Kolkata","Kollam","Kota","Kozhikode","Kudremukh","Kullu","Kurnool","Lalitpur","Latur",
+  "Lucknow","Ludhiana","Madurai","Malappuram","Mangalore","Mathura","Meerut","Mehsana","Midnapore","Mirzapur",
+  "Moga","Moradabad","Morbi","Mumbai","Munger","Muzaffarpur","Nadiad","Nagpur","Nainital","Nanded","Nashik","Navsari",
+  "Nawada","Noida","Ongole","Ooty","Palakkad","Pali","Panaji (Goa)","Panipat","Parbhani","Pondicherry","Porbandar",
+  "Prayagraj","Pune","Puri","Purnea","Raigarh","Raipur","Rajkot","Ramagundam","Rampur","Ranchi","Ratlam","Raurkela",
+  "Rewari","Rishikesh","Rohtak","Roorkee","Sagar","Sambalpur","Satna","Shimla","Shimoga","Siliguri","Sirmaur",
+  "Sirohi","Solapur","Sonepat","Srinagar","Sultanpur","Surat","Surendranagar","Thane","Thanjavur","Thiruvananthapuram",
+  "Thoothukudi (Tuticorin)","Thrissur","Tirunelveli","Tirupati","Tiruppur","Tiruvannamalai","Udaipur","Udupi","Ujjain",
+  "Ulhasnagar","Vadodara (Baroda)","Vapi","Varanasi","Vasai","Vijayawada","Visakhapatnam","Warangal","Washim","Yamuna Nagar",
+
+  // common airports & variants (so user may type "DEL", "BOM", "GOI", "LKO")
+  "Delhi Airport (DEL)","Mumbai Airport (BOM)","Bengaluru Airport (BLR)","Kolkata Airport (CCU)",
+  "Chennai Airport (MAA)","Hyderabad Airport (HYD)","Lucknow Airport (LKO)","Varanasi Airport (VNS)",
+  "Goa Airport (GOI)","Amritsar Airport (ATQ)","Pune Airport (PNQ)","Jaipur Airport (JAI)",
+  "Thiruvananthapuram (TRV)","Cochin Airport (COK)","Nagpur (NAG)","Indore (IDR)","Raipur (RPR)",
+  "Srinagar (SXR)","Leh (IXL)","Vadodara (BDQ)","Ahmedabad Airport (AMD)","Noida / Greater Noida (GZB)"
 ];
 
-// Embedded WhatsApp contact (fallback modal included)
-function WhatsAppContactInline({ phone, getPrefillMessage }) {
-  const [showFallback, setShowFallback] = useState(false);
-  const [copied, setCopied] = useState(false);
+/* --------------------- Utilities --------------------- */
+function digitsOnly(s) {
+  return (s || "").replace(/\D/g, "");
+}
+function isValidEmail(s) {
+  if (!s) return true; // optional field
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s.trim());
+}
 
-  const openWhatsApp = () => {
-    const text = encodeURIComponent(getPrefillMessage());
-    const waDeep = `whatsapp://send?phone=${phone}&text=${text}`;
-    const waWeb = `https://wa.me/${phone}?text=${text}`;
+/* -------------------- Modal -------------------- */
+function BookingModal({ open, onClose, payload, onSendWhatsApp }) {
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [phoneError, setPhoneError] = useState("");
+  const [emailError, setEmailError] = useState("");
 
-    try {
-      window.location.href = waDeep; // try mobile deep link
-    } catch (e) {}
-
-    setTimeout(() => {
-      try {
-        window.open(waWeb, "_blank", "noopener,noreferrer");
-        setTimeout(() => setShowFallback(true), 900);
-      } catch (e) {
-        setShowFallback(true);
-      }
-    }, 300);
-  };
-
-  const copyNumber = async () => {
-    try {
-      await navigator.clipboard.writeText(phone);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      const ta = document.createElement("textarea");
-      ta.value = phone;
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand("copy");
-      document.body.removeChild(ta);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+  useEffect(() => {
+    if (!open) {
+      setName("");
+      setPhone("");
+      setEmail("");
+      setPhoneError("");
+      setEmailError("");
     }
+  }, [open]);
+
+  if (!open) return null;
+
+  const handleSend = () => {
+    const digits = digitsOnly(phone);
+    if (digits.length < 10) {
+      setPhoneError("Phone number must be at least 10 digits.");
+      return;
+    }
+    if (!isValidEmail(email)) {
+      setEmailError("Please enter a valid email address.");
+      return;
+    }
+    setPhoneError("");
+    setEmailError("");
+    onSendWhatsApp(name || "Customer", digits, email || null);
   };
 
-  const mailToFallback = () => {
-    const subject = encodeURIComponent("Booking request");
-    const body = encodeURIComponent(getPrefillMessage());
-    window.location.href = `mailto:you@yourdomain.com?subject=${subject}&body=${body}`;
-  };
+  const summary = `From: ${payload.from}\nTo: ${payload.to}\nPassengers: ${payload.passengers}\nLuggage: 5kg x${payload.luggage5}, 7kg x${payload.luggage7}, 15kg x${payload.luggage15}, Duffle x${payload.duffle}`;
 
   return (
-    <>
-      <button
-        onClick={openWhatsApp}
-        className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded shadow"
-      >
-        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-          <path d="M20.52 3.48A11.92 11.92 0 0012 0C5.37 0 .01 5.36.01 12c0 2.11.55 4.18 1.6 6.01L0 24l6.33-1.64A11.95 11.95 0 0012 24c6.63 0 12-5.37 12-12 0-3.2-1.25-6.2-3.48-8.52zM12 22.01c-1.72 0-3.41-.44-4.88-1.28l-.35-.2-3.76.98.97-3.66-.23-.37A9.02 9.02 0 012.99 12 9.01 9.01 0 1112 21.99z"/>
-          <path d="M17.51 14.21c-.24-.12-1.41-.7-1.63-.78-.22-.08-.38-.12-.54.12-.16.24-.63.78-.77.94-.14.16-.28.18-.52.06-.24-.12-1.01-.37-1.92-1.18-.71-.63-1.19-1.4-1.33-1.64-.14-.24 0-.36.11-.48.11-.11.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.54-1.3-.74-1.79-.2-.47-.4-.4-.55-.4-.15-.01-.32-.01-.49-.01-.16 0-.42.06-.64.3-.22.24-.84.82-.84 2 0 1.18.86 2.32.98 2.48.12.16 1.69 2.58 4.1 3.66 2.4 1.09 2.4.73 2.84.68.44-.05 1.42-.58 1.62-1.14.2-.56.2-1.03.14-1.14-.05-.11-.2-.18-.44-.3z"/>
-        </svg>
-        Message on WhatsApp
-      </button>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
+      <div className="relative max-w-lg w-full bg-white rounded-lg shadow-lg overflow-auto">
+        <div className="p-4 border-b">
+          <h3 className="text-lg font-semibold">Confirm & Contact Support</h3>
+          <p className="text-sm text-gray-600">Fill your details — we'll send this info to WhatsApp support.</p>
+        </div>
 
-      {showFallback && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setShowFallback(false)} />
-          <div className="relative bg-white rounded-lg p-5 max-w-md w-full shadow-lg">
-            <h3 className="font-semibold mb-2">Can't open WhatsApp?</h3>
-            <p className="text-sm text-gray-600 mb-3">If WhatsApp Web isn't signed in or your device doesn't have WhatsApp, use one of these:</p>
+        <div className="p-4 space-y-3">
+          <div>
+            <label className="block text-sm font-medium">Your Name</label>
+            <input value={name} onChange={(e) => setName(e.target.value)} className="mt-1 block w-full border rounded px-3 py-2" placeholder="e.g. Amit Kumar" />
+          </div>
 
-            <div className="flex items-center gap-3 mb-3">
-              <div className="flex-1">
-                <div className="text-xs text-gray-500">Phone</div>
-                <div className="font-medium">{phone}</div>
-              </div>
-              <button onClick={copyNumber} className="px-3 py-2 border rounded">
-                {copied ? "Copied" : "Copy"}
-              </button>
-            </div>
+          <div>
+            <label className="block text-sm font-medium">Mobile Number</label>
+            <input value={phone} onChange={(e) => setPhone(e.target.value)} className={`mt-1 block w-full border rounded px-3 py-2 ${phoneError ? "border-red-500" : ""}`} placeholder="+91xxxxxxxxxx or 10 digit" />
+            {phoneError && <div className="text-red-600 text-sm mt-1">{phoneError}</div>}
+          </div>
 
-            <div className="flex gap-2">
-              <button onClick={() => { setShowFallback(false); mailToFallback(); }} className="px-3 py-2 bg-sky-600 text-white rounded">Email us</button>
-              <a href={`tel:${phone}`} className="px-3 py-2 border rounded">Call</a>
-              <button onClick={() => setShowFallback(false)} className="px-3 py-2 border rounded ml-auto">Close</button>
-            </div>
+          <div>
+            <label className="block text-sm font-medium">Email (optional)</label>
+            <input value={email} onChange={(e) => setEmail(e.target.value)} className={`mt-1 block w-full border rounded px-3 py-2 ${emailError ? "border-red-500" : ""}`} placeholder="you@example.com" />
+            {emailError && <div className="text-red-600 text-sm mt-1">{emailError}</div>}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium">Summary</label>
+            <textarea readOnly value={summary} className="mt-1 block w-full border rounded px-3 py-2 h-28 bg-gray-50" />
+          </div>
+
+          <div className="flex gap-3">
+            <button onClick={handleSend} className="px-4 py-2 rounded bg-emerald-500 text-white">Send via WhatsApp</button>
+            <a href={`tel:${SUPPORT_PHONE}`} className="px-4 py-2 rounded border inline-flex items-center">Call Support</a>
+            <a href={`mailto:${SUPPORT_EMAIL}?subject=Booking%20Enquiry&body=${encodeURIComponent(summary)}`} className="px-4 py-2 rounded border inline-flex items-center">Email Support</a>
+            <button onClick={onClose} className="ml-auto px-3 py-2 text-sm">Close</button>
           </div>
         </div>
-      )}
-    </>
+      </div>
+    </div>
   );
 }
 
-/* ---------- Main form component ---------- */
+/* -------------------- Main component -------------------- */
 export default function BookByKmForm() {
+  // form state
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [fromCity] = useState("Varanasi");
+  const [toCity, setToCity] = useState("");
   const [passengers, setPassengers] = useState(1);
-  const [tripType, setTripType] = useState("oneway");
-  const [notes, setNotes] = useState("");
+  const [luggage5, setLuggage5] = useState(0);
+  const [luggage7, setLuggage7] = useState(0);
+  const [luggage15, setLuggage15] = useState(0);
+  const [duffle, setDuffle] = useState(0);
 
-  // pickup / drop
-  // pickup default Varanasi (user can choose Varanasi Airport / Cantonment)
-  const [pickup, setPickup] = useState("Varanasi");
-  const [drop, setDrop] = useState("");
+  // validation/errors
+  const [nameError, setNameError] = useState("");
+  const [phoneError, setPhoneError] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [toError, setToError] = useState("");
 
-  // luggage
-  const [luggageType, setLuggageType] = useState("trolley_5kg");
-  const [luggageCount, setLuggageCount] = useState(1);
-  const [luggageItems, setLuggageItems] = useState([]);
+  // autocomplete suggestions
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
-  // submission
-  const [notice, setNotice] = useState(null);
-  const [submittedRef, setSubmittedRef] = useState(null);
-  const [submittedData, setSubmittedData] = useState(null);
+  // modal
+  const [modalOpen, setModalOpen] = useState(false);
 
+  // derived validity
+  const phoneDigits = digitsOnly(phone);
+  const isPhoneValid = phoneDigits.length >= 10;
+  const isEmailValid = isValidEmail(email);
+  const isNameValid = name.trim().length > 0;
+  const isToValid = toCity.trim().length > 0;
+
+  // prepare suggestions (search only after 2 chars)
   useEffect(() => {
-    if (phone && !/^\+?[0-9\s-]{7,15}$/.test(phone)) {
-      setNotice("कृपया सही फोन नंबर डालें (country code सहित या बिना) ।");
+    const q = (toCity || "").trim();
+    if (q.length < 2) {
+      setSuggestions([]);
+      setShowSuggestions(false);
       return;
     }
-    if (passengers < 1) {
-      setNotice("Number of passengers must be at least 1.");
-      return;
+    const ql = q.toLowerCase();
+    // prefer startsWith matches first, then includes
+    const starts = [];
+    const includes = [];
+    for (let i = 0; i < INDIA_CITIES.length; i++) {
+      const city = INDIA_CITIES[i];
+      const lower = city.toLowerCase();
+      if (lower.startsWith(ql)) starts.push(city);
+      else if (lower.includes(ql)) includes.push(city);
+      if (starts.length + includes.length >= 12) break; // limit suggestions
     }
-    setNotice(null);
-  }, [phone, passengers]);
+    const combined = [...starts, ...includes];
+    setSuggestions(combined);
+    setShowSuggestions(true);
+  }, [toCity]);
 
-  function addLuggage() {
-    if (!luggageType || luggageType === "none") return;
-    const cnt = Math.max(1, Number(luggageCount || 1));
-    setLuggageItems((prev) => {
-      const found = prev.find((p) => p.type === luggageType);
-      if (found) {
-        return prev.map((p) => (p.type === luggageType ? { ...p, count: p.count + cnt } : p));
-      }
-      return [...prev, { type: luggageType, count: cnt }];
-    });
-    setLuggageCount(1);
-    setLuggageType("trolley_5kg");
+  // handle selecting suggestion
+  function pickSuggestion(s) {
+    setToCity(s);
+    setShowSuggestions(false);
+    setToError("");
   }
 
-  function removeLuggage(type) {
-    setLuggageItems((prev) => prev.filter((p) => p.type !== type));
+  // validate inline when values change
+  useEffect(() => {
+    setNameError(isNameValid ? "" : "");
+  }, [name]);
+
+  useEffect(() => {
+    if (!phone) { setPhoneError(""); return; }
+    if (phoneDigits.length < 10) setPhoneError("Phone number must be at least 10 digits.");
+    else setPhoneError("");
+  }, [phone, phoneDigits.length]);
+
+  useEffect(() => {
+    if (!email) { setEmailError(""); return; }
+    setEmailError(isEmailValid ? "" : "Please enter a valid email address.");
+  }, [email]);
+
+  // submit handler (opens modal if valid)
+  function handleSubmit(e) {
+    e?.preventDefault();
+    // basic validation
+    if (!isNameValid) { setNameError("Please enter your name."); return; }
+    if (!isPhoneValid) { setPhoneError("Phone number must be at least 10 digits."); return; }
+    if (!isEmailValid) { setEmailError("Please enter a valid email address."); return; }
+    if (!isToValid) { setToError("Please enter a destination city or airport."); return; }
+
+    setNameError(""); setPhoneError(""); setEmailError(""); setToError("");
+    setModalOpen(true);
+  }
+
+  // handler to send WhatsApp from modal (passed down)
+  function onSendWhatsApp(nameVal, digits, emailVal) {
+    const msg = `Booking enquiry from website:\nName: ${nameVal}\nMobile: ${digits}${emailVal ? `\nEmail: ${emailVal}` : ""}\nFrom: ${fromCity}\nTo: ${toCity}\nPassengers: ${passengers}\nLuggage: 5kg x${luggage5}, 7kg x${luggage7}, 15kg x${luggage15}, Duffle x${duffle}\n\nPlease provide quote & availability.`;
+    const waUrl = `https://wa.me/${SUPPORT_PHONE.replace(/^\+/, "")}?text=${encodeURIComponent(msg)}`;
+    window.open(waUrl, "_blank");
+    setModalOpen(false);
+    alert("WhatsApp opened — we sent support the booking details.");
+    // optionally reset form:
+    // resetForm();
   }
 
   function resetForm() {
-    setName(""); setPhone(""); setPassengers(1); setTripType("oneway"); setNotes("");
-    setPickup("Varanasi"); setDrop("");
-    setLuggageItems([]); setLuggageCount(1); setLuggageType("trolley_5kg");
-    setNotice(null); setSubmittedRef(null); setSubmittedData(null);
+    setName(""); setPhone(""); setEmail(""); setToCity("");
+    setPassengers(1); setLuggage5(0); setLuggage7(0); setLuggage15(0); setDuffle(0);
+    setNameError(""); setPhoneError(""); setEmailError(""); setToError("");
+    setSuggestions([]); setShowSuggestions(false);
   }
-
-  async function handleSubmit(e) {
-    e && e.preventDefault();
-
-    if (!name.trim()) { setNotice("कृपया नाम दर्ज करें."); return; }
-    if (!phone.trim()) { setNotice("कृपया फोन नंबर दर्ज करें."); return; }
-    if (!drop.trim()) { setNotice("कृपया Drop (Destination) दर्ज करें."); return; }
-
-    const ref = generateRef();
-    const payload = {
-      ref,
-      name: name.trim(),
-      phone: phone.trim(),
-      passengers,
-      tripType,
-      pickup,
-      drop,
-      luggage: luggageItems,
-      notes: notes.trim(),
-      createdAt: new Date().toISOString(),
-    };
-
-    // demo: store client-side
-    setSubmittedRef(ref);
-    setSubmittedData(payload);
-    setNotice(null);
-
-    // TODO: agar chaha to yahan POST karke Google Sheet / Apps Script bhej sakte ho
-    setTimeout(() => {
-      document.getElementById("book-confirm")?.scrollIntoView({ behavior: "smooth", block: "center" });
-    }, 120);
-  }
-
-  // WhatsApp number (apna number daalo, country code ke saath, bina +)
-  const WA_NUMBER = "919812345678"; // <-- अपना WhatsApp नंबर यहाँ बदल दे
-  const getWhatsAppMessage = () => {
-    if (!submittedData) return "";
-    const luggageText = (submittedData.luggage || []).length === 0 ? "No luggage" :
-      (submittedData.luggage.map(it => `${it.count}× ${it.type}`).join(", "));
-    return `Booking request\nRef: ${submittedRef}\nName: ${submittedData.name}\nPhone: ${submittedData.phone}\nFrom: ${submittedData.pickup}\nTo: ${submittedData.drop}\nPassengers: ${submittedData.passengers}\nLuggage: ${luggageText}\nNotes: ${submittedData.notes || "-"}`;
-  };
 
   return (
     <div className="rounded-xl border shadow-sm p-6 bg-white">
-      <h3 className="text-2xl font-semibold mb-2">Book By Details </h3>
-      <p className="text-sm text-gray-600 mb-4">Pickup default: Varanasi. Destination can be any city in India.</p>
+      <h3 className="text-2xl font-semibold mb-2">Book From Varanasi — Destination (All India)</h3>
+      <p className="text-sm text-gray-600 mb-4">Type destination (city or airport). Suggestions appear after 2 letters.</p>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4" autoComplete="off">
         <div>
-          <label className="block text-sm font-medium mb-1">Full name</label>
-          <input value={name} onChange={(e)=>setName(e.target.value)} className="w-full border rounded px-3 py-2" placeholder="Your name" />
+          <label className="block text-sm font-medium">Your name</label>
+          <input value={name} onChange={(e) => setName(e.target.value)} className={`w-full border rounded px-3 py-2 ${nameError ? "border-red-500" : ""}`} placeholder="Your name" />
+          {nameError && <div className="text-red-600 text-sm mt-1">{nameError}</div>}
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">Phone</label>
-          <input value={phone} onChange={(e)=>setPhone(e.target.value)} className="w-full border rounded px-3 py-2" placeholder="e.g. 9198XXXXXXXX" />
-          <div className="text-xs text-gray-500 mt-1">हम इस नंबर पर कॉल करके booking confirm करेंगे — कोई online payment नहीं।</div>
+          <label className="block text-sm font-medium">Mobile number</label>
+          <input value={phone} onChange={(e) => setPhone(e.target.value)} className={`w-full border rounded px-3 py-2 ${phoneError ? "border-red-500" : ""}`} placeholder="e.g. +9198XXXXXXXX or 10 digits" />
+          {phoneError && <div className="text-red-600 text-sm mt-1">{phoneError}</div>}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div>
-            <label className="block text-sm font-medium mb-1">Passengers</label>
-            <input type="number" min={1} max={12} value={passengers} onChange={(e)=>setPassengers(Math.max(1, Number(e.target.value||1)))} className="w-full border rounded px-3 py-2" />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1">Trip type</label>
-            <select value={tripType} onChange={(e)=>setTripType(e.target.value)} className="w-full border rounded px-3 py-2">
-              <option value="oneway">One-way</option>
-              <option value="round">Round-trip</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1">Notes (optional)</label>
-            <input value={notes} onChange={(e)=>setNotes(e.target.value)} className="w-full border rounded px-3 py-2" placeholder="child seat, early pickup, etc." />
-          </div>
+        <div>
+          <label className="block text-sm font-medium">Email (optional)</label>
+          <input value={email} onChange={(e) => setEmail(e.target.value)} className={`w-full border rounded px-3 py-2 ${emailError ? "border-red-500" : ""}`} placeholder="you@example.com" />
+          {emailError && <div className="text-red-600 text-sm mt-1">{emailError}</div>}
         </div>
 
-        {/* Pickup & Drop */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <label className="block text-sm font-medium mb-1">Pickup (From)</label>
-            <select value={pickup} onChange={(e)=>setPickup(e.target.value)} className="w-full border rounded px-3 py-2">
-              <option value="Varanasi">Varanasi (city)</option>
-              <option value="Varanasi Airport">Varanasi Airport (Lal Bahadur)</option>
-              <option value="Varanasi Cantonment">Varanasi Cantonment</option>
-              <option value="Other Varanasi Location">Other (Varanasi)</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1">Drop / Destination (India)</label>
-            <input
-              list="india-cities"
-              value={drop}
-              onChange={(e)=>setDrop(e.target.value)}
-              className="w-full border rounded px-3 py-2"
-              placeholder="Type city name or pick from suggestions"
-            />
-            <datalist id="india-cities">
-              {/* helpful suggestions; user can still type any city */}
-              <option>Lucknow</option>
-              <option>Ayodhya</option>
-              <option>Prayagraj</option>
-              <option>Kanpur</option>
-              <option>Patna</option>
-              <option>Varanasi</option>
-              <option>Agra</option>
-              <option>Delhi</option>
-              <option>Mumbai</option>
-              <option>Lucknow Airport</option>
-              <option>Jhansi</option>
-              <option>Mirzapur</option>
-              <option>Bhadohi</option>
-              <option>Gorakhpur</option>
-              <option>Lucknow</option>
-            </datalist>
-          </div>
+        <div>
+          <label className="block text-sm font-medium">From</label>
+          <input readOnly value={fromCity} className="w-full border rounded px-3 py-2 bg-gray-50" />
         </div>
 
-        {/* Luggage */}
-        <div className="pt-2 pb-1">
-          <label className="block text-sm font-medium mb-2">Luggage — add multiple items</label>
-          <div className="flex gap-2 items-center mb-2">
-            <select value={luggageType} onChange={(e)=>setLuggageType(e.target.value)} className="border rounded px-3 py-2">
-              {LUGGAGE_TYPES.map((t)=> <option key={t.value} value={t.value}>{t.label}</option>)}
-            </select>
+        <div style={{ position: "relative" }}>
+          <label className="block text-sm font-medium">Destination (To)</label>
+          <input
+            value={toCity}
+            onChange={(e) => { setToCity(e.target.value); }}
+            onFocus={() => { if (toCity.length >= 2) setShowSuggestions(true); }}
+            onBlur={() => { setTimeout(()=>setShowSuggestions(false), 150); }}
+            placeholder="Type city or airport (e.g. Lucknow / Prayagraj / Anywhere in India)"
+            className={`w-full border rounded px-3 py-2 ${toError ? "border-red-500" : ""}`}
+          />
+          {toError && <div className="text-red-600 text-sm mt-1">{toError}</div>}
 
-            <input type="number" min={1} value={luggageCount} onChange={(e)=>setLuggageCount(Math.max(1, Number(e.target.value||1)))} className="w-20 border rounded px-3 py-2" />
-
-            <button type="button" onClick={addLuggage} className="px-3 py-2 bg-amber-600 text-white rounded">Add</button>
-
-            <button type="button" onClick={()=>setLuggageItems([])} className="px-3 py-2 border rounded text-sm">Clear</button>
-          </div>
-
-          <div className="flex gap-2 flex-wrap">
-            {luggageItems.length === 0 ? (
-              <div className="text-xs text-gray-500">No luggage added</div>
-            ) : (
-              luggageItems.map((it) => (
-                <div key={it.type} className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gray-100 border text-sm">
-                  <div>{it.type} × {it.count}</div>
-                  <button type="button" onClick={()=>removeLuggage(it.type)} className="text-xs px-2 py-1 rounded border bg-white">Remove</button>
+          {showSuggestions && suggestions && suggestions.length > 0 && (
+            <div className="absolute left-0 right-0 bg-white border rounded mt-1 shadow max-h-48 overflow-auto z-30">
+              {suggestions.map((s, idx) => (
+                <div key={idx} onMouseDown={() => pickSuggestion(s)} className="px-3 py-2 hover:bg-amber-50 cursor-pointer text-sm">
+                  {s}
                 </div>
-              ))
-            )}
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium">Number Of Passengers</label>
+          <input type="number" min={1} max={12} value={passengers} onChange={(e) => setPassengers(Math.max(1, Number(e.target.value || 1)))} className="w-full border rounded px-3 py-2" />
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-sm font-medium">5 kg trolley bags</label>
+            <input type="number" min={0} value={luggage5} onChange={(e) => setLuggage5(Math.max(0, Number(e.target.value || 0)))} className="w-full border rounded px-3 py-2" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium">7 kg cabin bags</label>
+            <input type="number" min={0} value={luggage7} onChange={(e) => setLuggage7(Math.max(0, Number(e.target.value || 0)))} className="w-full border rounded px-3 py-2" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium">15 kg check-in bags</label>
+            <input type="number" min={0} value={luggage15} onChange={(e) => setLuggage15(Math.max(0, Number(e.target.value || 0)))} className="w-full border rounded px-3 py-2" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium">Duffle / Other</label>
+            <input type="number" min={0} value={duffle} onChange={(e) => setDuffle(Math.max(0, Number(e.target.value || 0)))} className="w-full border rounded px-3 py-2" />
           </div>
         </div>
 
-        {notice && <div className="p-3 rounded border bg-red-50 text-red-700 text-sm">{notice}</div>}
+        <div>
+          <div className="p-3 rounded border bg-gray-50">
+            <div className="text-sm text-gray-700">Rate & Vehicle details: <strong>Contact for quote</strong></div>
+            <div className="text-sm text-gray-700 mt-2">Estimated Fare: <strong>Contact Us — we'll provide a customised quote</strong></div>
+          </div>
+        </div>
 
         <div className="flex items-center gap-3">
-          <button type="submit" className={`px-4 py-2 rounded text-white bg-amber-600 hover:bg-amber-700`}>Submit Request</button>
+          <button type="submit" className="px-4 py-2 rounded text-white bg-amber-600 hover:opacity-95">Book Now</button>
           <button type="button" onClick={resetForm} className="px-4 py-2 rounded border">Reset</button>
           <div className="ml-auto text-xs text-gray-500">Final fare confirmed by our team on call.</div>
         </div>
       </form>
 
-      {/* Confirmation + WhatsApp */}
-      {submittedRef && submittedData && (
-        <div id="book-confirm" className="mt-6 p-4 rounded border bg-emerald-50">
-          <div className="font-semibold text-amber-700">Request received</div>
-          <div className="mt-1 text-sm text-gray-700">Reference: <strong>{submittedRef}</strong></div>
-
-          <div className="mt-3 text-sm text-gray-800 space-y-1">
-            <div><strong>Name:</strong> {submittedData.name}</div>
-            <div><strong>Phone:</strong> {submittedData.phone}</div>
-            <div><strong>From:</strong> {submittedData.pickup}</div>
-            <div><strong>To:</strong> {submittedData.drop}</div>
-            <div><strong>Passengers:</strong> {submittedData.passengers}</div>
-            <div><strong>Trip type:</strong> {submittedData.tripType === "oneway" ? "One-way" : "Round-trip"}</div>
-            <div><strong>Luggage:</strong>
-              <div className="mt-1 ml-2">
-                {submittedData.luggage.length === 0 ? <span>No luggage</span> :
-                  submittedData.luggage.map((it, idx) => (
-                    <div key={idx}>• {it.type} × {it.count}</div>
-                  ))
-                }
-              </div>
-            </div>
-            {submittedData.notes && <div><strong>Notes:</strong> {submittedData.notes}</div>}
-          </div>
-
-          <div className="mt-4 flex items-center gap-3">
-            <WhatsAppContactInline phone={WA_NUMBER} getPrefillMessage={() => getWhatsAppMessage()} />
-
-            <button onClick={() => {
-              const subject = encodeURIComponent(`Booking request ${submittedRef}`);
-              const body = encodeURIComponent(JSON.stringify(submittedData, null, 2));
-              window.location.href = `mailto:you@yourdomain.com?subject=${subject}&body=${body}`;
-            }} className="px-3 py-2 border rounded">Email details</button>
-
-            <button onClick={() => { resetForm(); window.scrollTo({ top: 0, behavior: "smooth" }); }} className="px-3 py-2 border rounded ml-auto">Done</button>
-          </div>
-
-          <div className="mt-3 text-xs text-gray-700">Tip: WhatsApp खोलने के बाद message भेजना न भूलें — तभी हमें तुरन्त notification मिलता है।</div>
-        </div>
-      )}
+      <BookingModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        payload={{
+          from: fromCity,
+          to: toCity,
+          passengers,
+          luggage5,
+          luggage7,
+          luggage15,
+          duffle,
+        }}
+        onSendWhatsApp={onSendWhatsApp}
+      />
     </div>
   );
 }

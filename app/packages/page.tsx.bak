@@ -1,0 +1,41 @@
+// app/packages/page.tsx
+import React from "react";
+import PackagesClient from "./PackagesClient";
+
+// ---------- SEO Meta (server component only) ----------
+export const metadata = {
+  title: "Packages — BookYourTravell | Varanasi tours",
+  description:
+    "Curated Varanasi packages — temple darshan, day trips, airport transfers and self-drive options. Trusted drivers, transparent pricing.",
+  openGraph: {
+    title: "Packages — BookYourTravell",
+    description:
+      "Curated Varanasi packages — temple darshan, day trips, airport transfers and self-drive options.",
+    images: ["/images/kashi1.jpg"],
+  },
+};
+
+// ---------- JSON-LD ----------
+const JSON_LD = {
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  name: "BookYourTravell Packages",
+  description:
+    "List of curated travel packages from Varanasi — temple trips, day tours, airport transfers and self-drive options.",
+};
+
+export default function Page() {
+  return (
+    <main className="min-h-screen py-12 px-4 bg-gray-50">
+      {/* JSON-LD (SEO structured data) */}
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }}
+      />
+
+      {/* Client UI (hover images, design) */}
+      <PackagesClient />
+    </main>
+  );
+}

@@ -1,3 +1,11 @@
+/* globals.css — add at top */
+@import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@700;900&family=Poppins:wght@300;400;600;700&display=swap');
+
+:root{
+  --primary:#f97316;
+  --accent:#fb7185;
+}
+body { font-family: 'Poppins', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background-color: #fffaf6; }
 @import "tailwindcss";
 
 /* Root theme variables */
@@ -24,6 +32,9 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+html {
+  scroll-behavior: smooth;
 }
 
 /* ===== Hero Animations & Styles ===== */

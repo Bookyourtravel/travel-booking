@@ -1,0 +1,372 @@
+// app/packages/[slug]/page.tsx
+import React from "react";
+import Link from "next/link";
+import type { Metadata } from "next";
+import { SUPPORT_PHONE, SUPPORT_EMAIL } from "@/lib/constants";
+
+/**
+ * Detailed package data (English). Edit text or image paths as needed.
+ * Make sure images referenced here exist under /public/images/...
+ */
+const PACKAGES_DETAILS: Record<string, any> = {
+  ayodhya: {
+    slug: "ayodhya",
+    title: "Varanasi → Ayodhya Taxi",
+    subtitle: "Ayodhya — The city of Ramayana, temples and heritage",
+    heroImage: "/images/ayodhya1.jpg",
+    starting: "₹1,850 (4 pax)",
+    overview:
+      "Ayodhya is one of India’s oldest and most revered pilgrimage cities, closely associated with the Ramayana epic. Visitors come for temple darshan, historic sites and a deep spiritual experience.",
+    attractions: [
+      {
+        id: "ram-janmabhoomi",
+        title: "Ram Janmabhoomi Complex",
+        short: "Birthplace of Lord Rama — newly renovated temple complex.",
+        image: "/images/ayodhya_ram.jpg",
+        details:
+          "Ram Janmabhoomi is believed to be the birthplace of Lord Rama. The site has immense cultural and religious significance, and the newly reconstructed temple complex is a focal point for devotees. Historically the location has seen many events — archaeological finds, centuries of devotional practices and recent large-scale restoration and development.",
+        importance:
+          "Visiting Ram Janmabhoomi gives insight into Ramayana tradition, temple architecture and modern pilgrimage infrastructure. Expect regulated queues, security checks and designated timings for different types of darshan.",
+        visitTips:
+          ["Carry ID for verification if required.", "Respect dress code and footwear rules.", "Arrive early to avoid long queues on festival days."],
+      },
+      {
+        id: "hanuman-garhi",
+        title: "Hanuman Garhi",
+        short: "Hill-top Hanuman shrine with panoramic views.",
+        image: "/images/hanuman_garhi.jpg",
+        details:
+          "Hanuman Garhi is a prominent temple dedicated to Lord Hanuman and sits on a small hill near the old city. It is popular for both its religious importance and the vantage point it offers over Ayodhya’s lanes and ghats.",
+        importance:
+          "The shrine is associated with local legends and often forms part of a quick heritage circuit in Ayodhya. The morning and evening aartis are particularly atmospheric.",
+        visitTips: ["Wear comfortable footwear (stairs to climb).", "Photography may be permitted in outer areas; check signage."],
+      },
+      {
+        id: "kanak-bhawan",
+        title: "Kanak Bhawan",
+        short: "A historic temple known for its ornate architecture.",
+        image: "/images/kanak_bhawan.jpg",
+        details:
+          "Kanak Bhawan is traditionally associated with Sita and has fine carvings and historic idols. It is often visited in combination with other central temples in Ayodhya.",
+        importance:
+          "A good stop for visitors interested in temple art, ritual offerings and local devotional customs.",
+        visitTips: ["Observe temple timings; some inner sanctums may be restricted."],
+      },
+      {
+        id: "heritage-walks",
+        title: "Local temples & heritage walks",
+        short: "Explore old lanes, small shrines and local markets.",
+        image: "/images/ayodhya_walk.jpg",
+        details:
+          "Ayodhya’s old city area is best explored on foot with a local guide — narrow lanes, small shrines, traditional shops and stories at every corner. Local guides narrate folklore, historical anecdotes and practical visiting tips.",
+        importance:
+          "A guided walk reveals lesser-known monuments and living traditions that are missed by quick trips.",
+        visitTips: ["Hire a local guide for deeper context.", "Carry water and wear sun protection during day walks."],
+      },
+    ],
+    itinerary: [
+      "Day 1 — Depart Varanasi early morning, reach Ayodhya by midday, afternoon temple visits including Ram Janmabhoomi and Kanak Bhawan.",
+      "Day 2 — Morning heritage walk, local markets; optional extended visits or return to Varanasi by evening.",
+    ],
+    tips: [
+      "Best to book temple darshan slots in advance during festival seasons.",
+      "Respect local customs and maintain decorum in sacred spaces.",
+      "If you want a private guide, request at booking time and we will arrange one.",
+    ],
+  },
+
+  "kashi-darshan": {
+    slug: "kashi-darshan",
+    title: "Local Darshan - Kashi Vishwanath",
+    subtitle: "Kashi Vishwanath and the Ganga Aarti experience",
+    heroImage: "/images/kashi1.jpg",
+    starting: "₹3,800 (4 pax)",
+    overview:
+      "Kashi Vishwanath is the spiritual heart of Varanasi. The temple, the ghats and the Ganga Aarti together form an unforgettable experience of devotion and local culture.",
+    attractions: [
+      {
+        id: "kashi-vishwanath",
+        title: "Kashi Vishwanath Temple",
+        short: "One of the most revered Shiva shrines in India.",
+        image: "/images/kashi_vishwanath.jpg",
+        details:
+          "Kashi Vishwanath has been a central place of worship for centuries. The temple has been rebuilt and renovated multiple times; today it welcomes thousands of devotees daily.",
+        importance:
+          "Visiting gives insight into Shaivism, temple rituals, and the cultural centrality of Varanasi.",
+        visitTips: ["Expect heavy crowds during festivals; priority passes available on request."],
+      },
+      {
+        id: "ganga-aarti",
+        title: "Dashashwamedh Ghat & Ganga Aarti",
+        short: "Evening ritual on the ghats — pyrotechnic lamps & chants.",
+        image: "/images/ganga_aarti.jpg",
+        details:
+          "The Ganga Aarti at Dashashwamedh Ghat is an atmospheric ritual performed by priests with large brass lamps, synchronized chants and musical accompaniment. Front-row experiences can be pre-booked.",
+        importance:
+          "A must-see for first-time visitors to Varanasi; the sensory experience is authentic and moving.",
+        visitTips: ["Arrive early for the best vantage points; consider boat viewing for a unique perspective."],
+      },
+    ],
+    itinerary: [
+      "Early morning boat ride on the Ganges and sunrise view.",
+      "Temple visits during the day; evening Ganga Aarti reserved/priority seating.",
+    ],
+    tips: ["Carry small change for offerings and boat tickets.", "Aarti timings may change seasonally; we will confirm before booking."],
+  },
+
+  "lucknow-airport": {
+    slug: "lucknow-airport",
+    title: "Airport Pickup/Drop",
+    subtitle: "Punctual airport transfers with flight tracking",
+    heroImage: "/images/airport.jpg",
+    starting: "₹699 (Pickup)",
+    overview:
+      "Reliable airport pickup/drop service with flight tracking — drivers wait at arrival and assist with luggage and quick transfers.",
+    attractions: [],
+    itinerary: ["Pickup: driver tracks flight and times departure accordingly."],
+    tips: ["Share flight number, terminal and special instructions (assistance needed)."],
+  },
+
+  prayagraj: {
+    slug: "prayagraj",
+    title: "Varanasi → Prayagraj (Sangam)",
+    subtitle: "Triveni Sangam & spiritual confluence",
+    heroImage: "/images/prayagraj1.jpg",
+    starting: "₹2,900 (4 pax)",
+    overview:
+      "Prayagraj (Allahabad) is famed for the Triveni Sangam — the confluence of three sacred rivers. It’s an important pilgrimage destination and hosts large religious events.",
+    attractions: [
+      {
+        id: "sangam",
+        title: "Triveni Sangam",
+        short: "Sacred confluence of Ganga, Yamuna and the mythical Saraswati.",
+        image: "/images/sangam.jpg",
+        details:
+          "The Sangam is a sacred bathing spot for pilgrims. Boat rides and a sunrise visit create a memorable spiritual experience.",
+        importance:
+          "A core site for ritual bathing and festivals like the Kumbh; visitors often combine Sangam visits with nearby heritage sites.",
+        visitTips: ["Boat rides recommended early morning; follow safety instructions."],
+      },
+    ],
+    itinerary: ["Sunrise Sangam visit + local sightseeing or overnight option with hotel add-ons."],
+    tips: ["Peak season requires advance booking for boats and hotels."],
+  },
+
+  "ganga-aarti": {
+    slug: "ganga-aarti",
+    title: "Evening Ganga Aarti Special",
+    subtitle: "Front-row aarti experience with priest & photography",
+    heroImage: "/images/arti1.jpg",
+    starting: "₹1,599 (per person)",
+    overview:
+      "Front-row Ganga Aarti is an exclusive package for visitors who want the closest, most immersive aarti experience with photography and priest assistance.",
+    attractions: [],
+    itinerary: ["Front-row seating, priest guidance & photo opportunities."],
+    tips: ["Book early for peak-season evenings; expect security checks."],
+  },
+
+  "self-drive": {
+    slug: "self-drive",
+    title: "Self-Drive Cars (Varanasi)",
+    subtitle: "Flexible self-drive rentals — hourly / daily",
+    heroImage: "/images/selfdrive1.jpg",
+    starting: "₹1,850 / day",
+    overview:
+      "Self-drive rentals give you flexibility to explore Varanasi at your own pace. Documentation assistance and pickup/drop options available.",
+    attractions: [],
+    itinerary: ["Day rental: explore at your pace. Pickup/drop included."],
+    tips: ["Valid driving license and deposit required; read rental terms."],
+  },
+};
+
+/** Generate static params for SSG */
+export async function generateStaticParams() {
+  return Object.keys(PACKAGES_DETAILS).map((slug) => ({ slug }));
+}
+
+/** SEO per package */
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+  const pkg = PACKAGES_DETAILS[params.slug];
+  if (!pkg) {
+    return {
+      title: "Package Not Found — BookYourTravell",
+      description: "Requested package not found",
+    };
+  }
+
+  return {
+    title: `${pkg.title} | BookYourTravell`,
+    description: pkg.subtitle || pkg.overview?.slice(0, 150),
+    openGraph: {
+      title: `${pkg.title} | BookYourTravell`,
+      description: pkg.subtitle || pkg.overview?.slice(0, 150),
+      url: `https://bookyourtravell.com/packages/${params.slug}`,
+      images: [
+        {
+          url: pkg.heroImage || "/images/og-image.jpg",
+          width: 1200,
+          height: 630,
+        },
+      ],
+    },
+  } as Metadata;
+}
+
+/** Page component */
+export default function PackagePage({ params }: { params: { slug: string } }) {
+  const slug = params.slug;
+  const pkg = PACKAGES_DETAILS[slug];
+
+  if (!pkg) {
+    return (
+      <main className="min-h-screen flex items-center justify-center p-8">
+        <div className="text-center">
+          <h2 className="text-2xl font-semibold">Package not found</h2>
+          <p className="mt-2">
+            Please go back to <Link href="/"><span className="underline">home</span></Link>.
+          </p>
+        </div>
+      </main>
+    );
+  }
+
+  const waMessage = encodeURIComponent(
+    `Hi, I want to book *${pkg.title}* from Varanasi. Please share price & availability.`
+  );
+  const waUrl = `https://wa.me/${SUPPORT_PHONE.replace(/^\+/, "")}?text=${waMessage}`;
+
+  return (
+    <main className="min-h-screen font-sans">
+      {/* HERO */}
+      <section
+        className="relative py-20"
+        style={{
+          backgroundImage: `linear-gradient(180deg, rgba(0,0,0,0.35), rgba(0,0,0,0.35)), url('${pkg.heroImage}')`,
+          backgroundSize: "cover",
+          backgroundPosition: "center center",
+          color: "white",
+        }}
+      >
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="bg-black/30 p-6 rounded-lg inline-block">
+            <h1 className="text-3xl md:text-4xl font-bold">{pkg.title}</h1>
+            <p className="mt-2 text-sm md:text-base">{pkg.subtitle}</p>
+            <div className="mt-4 flex gap-3">
+              <a href={waUrl} target="_blank" rel="noreferrer" className="bg-emerald-500 text-white px-4 py-2 rounded">Book Now (WhatsApp)</a>
+              <Link href="/packages"><span className="px-4 py-2 rounded border bg-white/10">All Packages</span></Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* MAIN CONTENT */}
+      <section className="py-12 bg-white">
+        <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* left content */}
+          <div className="lg:col-span-2">
+            <h2 className="text-2xl font-semibold mb-3">Overview</h2>
+            <p className="text-gray-700 mb-6">{pkg.overview}</p>
+
+            {/* Attractions quick list */}
+            {pkg.attractions && pkg.attractions.length > 0 && (
+              <>
+                <h3 className="text-xl font-semibold mb-2">Top Attractions</h3>
+                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+                  {pkg.attractions.map((a: any) => (
+                    <li key={a.id} className="flex gap-3 items-start border rounded p-3 hover:shadow-lg transition">
+                      <img src={a.image || pkg.heroImage} alt={a.title} className="w-20 h-16 object-cover rounded" />
+                      <div>
+                        {/* replace the button with a normal anchor so no event handler is used */}
+<a href={`#${a.id}`} className="text-left text-base font-semibold hover:underline">
+  {a.title}
+</a>
+                        <div className="text-sm text-gray-600 mt-1">{a.short}</div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+
+            {/* Itinerary */}
+            {pkg.itinerary && (
+              <>
+                <h3 className="text-xl font-semibold mb-2">Suggested Itinerary</h3>
+                <ol className="list-decimal list-inside text-gray-700 mb-6">
+                  {pkg.itinerary.map((it: string, idx: number) => (
+                    <li key={idx} className="mb-2">{it}</li>
+                  ))}
+                </ol>
+              </>
+            )}
+
+            {/* Practical Tips */}
+            {pkg.tips && (
+              <>
+                <h3 className="text-xl font-semibold mb-2">Practical Tips</h3>
+                <ul className="list-disc list-inside text-gray-700 mb-6">
+                  {pkg.tips.map((t: string, i: number) => (
+                    <li key={i}>{t}</li>
+                  ))}
+                </ul>
+              </>
+            )}
+
+            {/* Detailed attraction sections */}
+            {pkg.attractions && pkg.attractions.length > 0 && (
+              <>
+                <h3 className="text-xl font-semibold mb-4">Attraction Details</h3>
+                <div className="space-y-8">
+                  {pkg.attractions.map((a: any) => (
+                    <article id={a.id} key={a.id} className="border rounded-lg overflow-hidden">
+                      <div className="md:flex">
+                        <img src={a.image || pkg.heroImage} alt={a.title} className="w-full md:w-1/3 object-cover h-56 md:h-auto" />
+                        <div className="p-6 md:flex-1">
+                          <h4 className="text-xl font-semibold mb-2">{a.title}</h4>
+                          <p className="text-gray-700 mb-3">{a.details}</p>
+                          <div className="text-sm text-gray-800 mb-2"><strong>Why visit:</strong> {a.importance}</div>
+                          {a.visitTips && (
+                            <div>
+                              <div className="text-sm font-medium mb-1">Visiting tips</div>
+                              <ul className="list-disc list-inside text-gray-700">
+                                {a.visitTips.map((vt: string, ii: number) => <li key={ii}>{vt}</li>)}
+                              </ul>
+                            </div>
+                          )}
+                          <div className="mt-4">
+                            <a href={waUrl} target="_blank" rel="noreferrer" className="inline-block bg-amber-600 text-white px-4 py-2 rounded">Enquire about this attraction</a>
+                          </div>
+                        </div>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* aside card */}
+          <aside className="border rounded p-4 bg-gray-50">
+            <div>
+              <div className="text-sm text-gray-600">Starting Price</div>
+              <div className="text-xl font-bold mt-1">{pkg.starting}</div>
+            </div>
+
+            <div className="mt-6">
+              <a href={waUrl} target="_blank" rel="noreferrer" className="block w-full text-center bg-amber-600 text-white py-3 rounded">Book Now via WhatsApp</a>
+            </div>
+
+            <div className="mt-4 text-sm text-gray-600">
+              <div>Call: <a href={`tel:${SUPPORT_PHONE}`} className="underline">{SUPPORT_PHONE}</a></div>
+              <div className="mt-2">Email: <a href={`mailto:${SUPPORT_EMAIL}`} className="underline">{SUPPORT_EMAIL}</a></div>
+            </div>
+
+            <div className="mt-6 text-xs text-gray-500">
+              Note: Prices are indicative. Final price confirmed on booking. Toll, parking or night charges may apply.
+            </div>
+          </aside>
+        </div>
+      </section>
+    </main>
+  );
+}
