@@ -1,13 +1,23 @@
 // app/packages/BackgroundSlideshowClient.tsx
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
+
+/**
+ * हल्का background slideshow जो fixed रहता है और page के पीछे subtle watermark/texture देता है.
+ * यह client-only है ताकि page server-side fast रहे।
+ */
 
 export default function BackgroundSlideshowClient() {
-  const IMAGES = ["/images/bw1.jpg", "/images/bw2.jpg", "/images/bw3.jpg", "/images/bw4.jpg"];
-  const [idx, setIdx] = React.useState(0);
+  const IMAGES = [
+    "/images/bw1\.webp",
+    "/images/bw2\.webp",
+    "/images/bw3\.webp"
+  ];
 
-  React.useEffect(() => {
-    const t = setInterval(() => setIdx((p) => (p + 1) % IMAGES.length), 5000);
+  const [idx, setIdx] = useState(0);
+
+  useEffect(() => {
+    const t = setInterval(() => setIdx((p) => (p + 1) % IMAGES.length), 6000);
     return () => clearInterval(t);
   }, []);
 
@@ -15,11 +25,12 @@ export default function BackgroundSlideshowClient() {
     <div
       aria-hidden
       style={{
-        position: "absolute",   // <-- scroll ke sath chalega
+        position: "fixed",
         inset: 0,
         zIndex: -1,
         pointerEvents: "none",
         overflow: "hidden",
+        background: "#fff",
       }}
     >
       {IMAGES.map((src, i) => (
@@ -27,18 +38,30 @@ export default function BackgroundSlideshowClient() {
           key={src}
           src={src}
           alt=""
+          loading="lazy"
           style={{
             position: "absolute",
-            top: 0,
-            left: 0,
+            inset: 0,
             width: "100%",
             height: "100%",
             objectFit: "cover",
-            opacity: i === idx ? 0.08 : 0,  // <-- halka watermark
-            transition: "opacity 1s ease-in-out",
+            transition: "opacity 900ms ease, transform 900ms ease, filter 900ms ease",
+            transform: i === idx ? "scale(1.03)" : "scale(1.02)",
+            filter: i === idx ? "brightness(0.85) saturate(0.95)" : "brightness(0.95) saturate(0.95)",
+            opacity: i === idx ? 0.14 : 0,
           }}
         />
       ))}
+
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          pointerEvents: "none",
+          background:
+            "linear-gradient(180deg, rgba(255,250,245,0.04), rgba(0,0,0,0.04))",
+        }}
+      />
     </div>
   );
 }

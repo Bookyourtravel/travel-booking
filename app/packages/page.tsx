@@ -19,7 +19,7 @@ export const metadata = {
     siteName: "BookYourTravell",
     images: [
       {
-        url: `${siteUrl}/images/kashi1.jpg`,
+        url: `${siteUrl}/images/kashi1\.webp`,
         width: 1200,
         height: 630,
         alt: "Varanasi Travel Packages",
@@ -32,7 +32,7 @@ export const metadata = {
     title: "Packages — BookYourTravell | Varanasi Tours",
     description:
       "Explore curated Varanasi packages: Ayodhya, Prayagraj, Ganga Aarti & more. Trusted drivers, transparent pricing with BookYourTravell.",
-    images: [`${siteUrl}/images/kashi1.jpg`],
+    images: [`${siteUrl}/images/kashi1\.webp`],
   },
 };
 

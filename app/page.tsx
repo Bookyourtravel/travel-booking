@@ -15,42 +15,42 @@ const PACKAGES = [
   {
     title: "Varanasi → Ayodhya Taxi",
     desc: "Reliable intercity taxi with fixed price and driver guide",
-    images: ["/images/ayodhya1.jpg", "/images/ayodhya2.jpg", "/images/ayodhya3.jpg"],
+    images: ["/images/ayodhya1.webp", "/images/ayodhya2.webp", "/images/ayodhya3.webp"],
     href: "/packages/ayodhya",
     starting: "₹1,850 (4 pax)",
   },
   {
     title: "Local Darshan - Kashi Vishwanath",
     desc: "Temple darshan + guided walk + Ganga Aarti evening experience",
-    images: ["/images/kashi1.jpg", "/images/kashi2.jpg", "/images/kashi3.jpg", "/images/kashi4.jpg"],
+    images: ["/images/kashi1.webp", "/images/kashi2.webp", "/images/kashi3.webp", "/images/kashi4.webp"],
     href: "/packages/kashi-darshan",
     starting: "₹3,800 (4 pax)",
   },
   {
     title: "Airport Pickup/Drop",
     desc: "Comfortable sedan / Innova options with flight tracking",
-    images: ["/images/airport.jpg"],
+    images: ["/images/lucknow-airport.webp"],
     href: "/packages/lucknow-airport",
     starting: "₹699 (Pickup)",
   },
   {
     title: "Varanasi → Prayagraj (Sangam)",
     desc: "Day trip or overnight packages with hotel add-ons",
-    images: ["/images/prayagraj1.jpg", "/images/prayagraj2.jpg", "/images/prayagraj3.jpg"],
+    images: ["/images/prayagraj1.webp", "/images/prayagraj2.webp", "/images/prayagraj3.webp"],
     href: "/packages/prayagraj",
     starting: "₹2,900 (4 pax)",
   },
   {
     title: "Evening Ganga Aarti Special",
     desc: "Front-row aarti experience with priest and photography",
-    images: ["/images/arti1.jpg", "/images/arti2.jpg", "/images/arti3.jpg"],
+    images: ["/images/arti1.webp", "/images/arti2.webp", "/images/arti3.webp"],
     href: "/packages/ganga-aarti",
     starting: "₹1,599 (per person)",
   },
   {
     title: "Self-Drive Cars (Varanasi)",
     desc: "Flexible self-drive hatchbacks & sedans — hourly or daily rentals with easy pickup/drop.",
-    images: ["/images/selfdrive1.jpg", "/images/selfdrive2.jpg"],
+    images: ["/images/selfdrive1.webp", "/images/selfdrive2.webp"],
     href: "/packages/self-drive",
     starting: "₹1,850 / day",
   },
@@ -315,7 +315,7 @@ export default function HomePage() {
           minHeight: "60vh",
           display: "flex",
           alignItems: "center",
-          backgroundImage: `linear-gradient(180deg, rgba(0,0,0,0.55), rgba(0,0,0,0.55)), url('/images/kashi.jpg')`,
+          backgroundImage: `linear-gradient(180deg, rgba(0,0,0,0.55), rgba(0,0,0,0.55)), url('/images/kashi.webp')`,
           backgroundPosition: "center center",
           backgroundRepeat: "no-repeat",
           backgroundSize: "cover",
@@ -435,7 +435,7 @@ export default function HomePage() {
 
       {/* POPULAR SERVICES */}
       <section id="popular-services" className="py-12 bg-white relative overflow-hidden">
-        <BackgroundWatermark images={["/images/bw1.jpg", "/images/bw2.jpg", "/images/bw3.jpg", "/images/bw4.jpg"]} />
+        <BackgroundWatermark images={["/images/bw1.webp", "/images/bw2.webp", "/images/bw3.webp", "/images/bw4.webp"]} />
 
         <div className="relative z-10 max-w-6xl mx-auto px-6">
           <h2 className="text-3xl font-bold mb-6">Popular Services</h2>

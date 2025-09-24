@@ -27,7 +27,7 @@ export const metadata: Metadata = {
       "Trusted travel booking service from Varanasi with verified drivers, temple darshan & custom tours.",
     url: "https://bookyourtravell.com",
     siteName: "BookYourTravell",
-    images: [{ url: "/images/og-image.jpg", width: 1200, height: 630 }],
+    images: [{ url: "/images/og-image\.webp", width: 1200, height: 630 }],
     locale: "en_IN",
     type: "website",
   },
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
     title: "BookYourTravell — Taxi & Packages",
     description:
       "Varanasi taxi, tours & temple darshan support. Verified drivers, honest fares.",
-    images: ["/images/og-image.jpg"],
+    images: ["/images/og-image\.webp"],
   },
 };
 

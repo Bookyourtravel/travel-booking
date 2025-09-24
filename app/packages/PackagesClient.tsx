@@ -1,204 +1,59 @@
-// app/components/PackageClient.tsx
+// app/packages/PackagesClient.tsx
 "use client";
-
-import React from "react";
+import Image from "next/image";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { WHATSAPP_NUMBER, SUPPORT_PHONE, SUPPORT_EMAIL } from "@/lib/constants";
 
-type Props = {
-  pkg: any;
-};
+const PACKAGES_LIST = [
+  { slug: "ayodhya", title: "Varanasi → Ayodhya Taxi", short: "Reliable intercity taxi with fixed price and driver guide.", starting: "₹1,850 (4 pax)", duration: "Full day", highlights: ["Private car", "Driver guide"], rating: 4.7, images: ["/images/ayodhya1.webp"], badge: "Popular" },
+  { slug: "kashi-darshan", title: "Local Darshan - Kashi Vishwanath", short: "Temple darshan + guided walk and Ganga Aarti experience.", starting: "₹3,800 (4 pax)", duration: "3–4 hours", highlights: ["Ganga Aarti","Local guide"], rating: 4.9, images: ["/images/kashi1.webp"], badge: "Top Rated" },
+  { slug: "lucknow-airport", title: "Airport Pickup/Drop", short: "Comfortable sedan / Innova with flight tracking options.", starting: "₹699 (Pickup)", duration: "As required", highlights: ["Flight tracking", "Meet & greet"], rating: 4.6, images: ["/images/lucknow-airport.webp"] },
+  { slug: "prayagraj", title: "Varanasi → Prayagraj (Sangam)", short: "Day trip or overnight packages.", starting: "₹2,900 (4 pax)", duration: "Overnight", highlights: ["Optional hotel"], rating: 4.5, images: ["/images/prayagraj1.webp"] },
+  { slug: "ganga-aarti", title: "Evening Ganga Aarti Special", short: "Front-row aarti experience.", starting: "₹1,599 (per person)", duration: "2 hours", highlights: ["Front-row seating"], rating: 4.8, images: ["/images/arti1.webp"] },
+  { slug: "self-drive", title: "Self-Drive Cars (Varanasi)", short: "Flexible self-drive cars", starting: "₹1,850 / day", duration: "Per day", highlights: ["Insurance included"], rating: 4.4, images: ["/images/selfdrive1.webp"] },
+];
 
-/* ---------- Helpers ---------- */
-function buildWhatsAppLink(number?: string, pkgTitle?: string, pkgSlug?: string) {
-  const num = number || "";
-  const clean = num.replace(/^\+/, "");
-  const msg = encodeURIComponent(
-    `Hi, I want to enquire about the package "${pkgTitle || pkgSlug}". Please help with price & availability.`
-  );
-  return `https://wa.me/${clean}?text=${msg}`;
-}
+export default function PackagesClient() {
+  const [cols, setCols] = useState(3);
+  useEffect(() => {
+    const update = () => {
+      const w = window.innerWidth;
+      setCols(w >= 1100 ? 3 : w >= 720 ? 2 : 1);
+    };
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
 
-function buildMailto(email?: string, pkgTitle?: string, pkgSlug?: string) {
-  const to = email || "";
-  const subject = encodeURIComponent(`Inquiry: ${pkgTitle || pkgSlug}`);
-  const body = encodeURIComponent(
-    `Hi,\n\nI would like details and booking information for the package "${pkgTitle || pkgSlug}".\n\nThanks,\n`
-  );
-  return `mailto:${to}?subject=${subject}&body=${body}`;
-}
-
-/* ---------- Component ---------- */
-export default function PackageClient({ pkg }: Props) {
-  const waLink = buildWhatsAppLink(WHATSAPP_NUMBER, pkg.titleHero || pkg.title, pkg.slug);
-  const telLink = `tel:${SUPPORT_PHONE || ""}`;
-  const mailLink = buildMailto(SUPPORT_EMAIL, pkg.titleHero || pkg.title, pkg.slug);
+  const cardWidth = Math.max(100 / cols - 2, 100 / cols - 2);
 
   return (
-    <div className="relative z-10">
-      {/* Hero Section */}
-      <section
-        className="relative py-24 text-white"
-        style={{
-          backgroundImage: `linear-gradient(180deg, rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('${pkg.heroImage}')`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
-      >
-        <div className="max-w-6xl mx-auto px-6">
-          <h1 className="text-5xl font-extrabold bg-gradient-to-r from-yellow-400 to-red-500 bg-clip-text text-transparent drop-shadow-lg">
-            {pkg.titleHero}
-          </h1>
-          {pkg.tagline && (
-            <p className="mt-3 text-lg italic opacity-90">{pkg.tagline}</p>
-          )}
-          <div className="mt-6 flex gap-4">
-            {/* Book via WhatsApp */}
-            <a
-              href={waLink}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center justify-center bg-gradient-to-r from-orange-500 to-red-500 text-white px-6 py-3 rounded-lg font-semibold shadow-lg hover:scale-105 transition"
-            >
-              Book this trip
-            </a>
+    <div style={{ position: "relative", minHeight: "100vh" }}>
+      {/* small background placeholder */}
+      <div style={{ textAlign: "center", padding: 40 }}>
+        <h1 style={{ fontSize: 32, fontWeight: 800, color: "#fb923c" }}>Explore Our Packages</h1>
+        <p style={{ color: "#6b7280" }}>Temple trips, day tours, airport transfers and more.</p>
+      </div>
 
-            <Link
-              href="/packages"
-              className="bg-white/20 border border-white/30 px-6 py-3 rounded-lg font-semibold hover:bg-white/30 transition"
-            >
-              View all packages
-            </Link>
-          </div>
+      <div style={{ maxWidth: 1100, margin: "20px auto", padding: "0 20px" }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 20 }}>
+          {PACKAGES_LIST.map((p) => (
+            <div key={p.slug} style={{ width: `${cardWidth}%`, minWidth: 260, boxSizing: "border-box", padding: 14, borderRadius: 12, boxShadow: "0 6px 20px rgba(0,0,0,0.06)", background: "#fff" }}>
+              <Image src={p.images?.[0]} alt={p.title} width={400} height={250} style={{ width: "100%", height: 120, objectFit: "cover", borderRadius: 8 }} />
+              <h3 style={{ margin: "10px 0 6px", fontSize: 18 }}>{p.title}</h3>
+              <p style={{ color: "#6b7280", marginBottom: 10 }}>{p.short}</p>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div style={{ color: "#e11d48", fontWeight: 800 }}>{p.starting}</div>
+                <Link href={`/packages/${p.slug}`}>
+                  <button style={{ background: "linear-gradient(90deg,#fb923c,#f97316)", color: "#fff", padding: "8px 12px", borderRadius: 8, border: "none", cursor: "pointer" }}>
+                    See details
+                  </button>
+                </Link>
+              </div>
+            </div>
+          ))}
         </div>
-      </section>
-
-      {/* Main Content */}
-      <section className="relative z-10 py-12">
-        <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Left Side */}
-          <div className="md:col-span-2 space-y-6">
-            {/* Why choose */}
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-md hover:shadow-xl hover:scale-[1.02] transition">
-                <h3 className="text-xl font-bold text-gray-800 mb-3">
-                  What you’ll get
-                </h3>
-                <ul className="space-y-2 text-gray-700">
-                  <li>✓ Trusted driver & fixed pricing — no surprises</li>
-                  <li>✓ On-time pickup aligned to your travel schedule</li>
-                  <li>✓ Comfortable vehicle + rest stops en route</li>
-                </ul>
-              </div>
-              <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-md hover:shadow-xl hover:scale-[1.02] transition">
-                <h3 className="text-xl font-bold text-gray-800 mb-3">
-                  Why this trip works
-                </h3>
-                <ul className="space-y-2 text-gray-700">
-                  <li>✓ Local driver insights</li>
-                  <li>✓ Easy customization on request</li>
-                  <li>✓ Relaxed, family-friendly pacing</li>
-                </ul>
-              </div>
-            </div>
-
-            {/* Overview */}
-            {pkg.overview && (
-              <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-md hover:shadow-xl hover:scale-[1.02] transition">
-                <h2 className="text-2xl font-bold mb-3">Overview</h2>
-                <p className="text-gray-700 leading-relaxed">{pkg.overview}</p>
-              </div>
-            )}
-
-            {/* Attractions */}
-            {pkg.attractions && pkg.attractions.length > 0 && (
-              <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-md hover:shadow-xl hover:scale-[1.02] transition">
-                <h2 className="text-2xl font-bold mb-4 text-orange-600">
-                  Top Attractions
-                </h2>
-                <div className="space-y-4">
-                  {pkg.attractions.map((a: any, i: number) => (
-                    <div
-                      key={i}
-                      className="flex items-center justify-between border rounded-lg p-4 hover:bg-orange-50 transition"
-                    >
-                      <div>
-                        <h3 className="font-semibold text-lg text-gray-800">
-                          {a.title || a}
-                        </h3>
-                        <p className="text-gray-600 text-sm">
-                          {a.short || "Click to explore full details"}
-                        </p>
-                      </div>
-                      <Link
-                        href={`/packages/${pkg.slug}/attractions/${a.slug}`}
-                        className="bg-orange-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-orange-600"
-                      >
-                        Learn more
-                      </Link>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Sidebar */}
-          <aside className="border rounded-xl p-6 bg-gradient-to-br from-orange-50 to-white shadow-md hover:shadow-lg transition">
-            <div>
-              <div className="text-sm text-gray-600">Starting price</div>
-              <div className="text-2xl font-bold mt-1 text-rose-600">
-                {pkg.starting}
-              </div>
-            </div>
-
-            <div className="mt-6 space-y-3">
-              {/* Primary CTA -> WhatsApp */}
-              <a
-                href={waLink}
-                target="_blank"
-                rel="noreferrer"
-                className="block w-full text-center bg-gradient-to-r from-orange-500 to-rose-500 text-white py-3 rounded-lg font-semibold shadow hover:scale-[1.02] transition"
-              >
-                Book now via WhatsApp
-              </a>
-
-              {/* Secondary quick contact row: Call + Email */}
-              <div className="flex gap-3 mt-2">
-                <a
-                  href={telLink}
-                  className="flex-1 text-center border rounded-md py-2 px-3 text-sm bg-white hover:bg-gray-50"
-                >
-                  Call
-                  <div className="text-xs text-gray-600 mt-1">
-                    {SUPPORT_PHONE}
-                  </div>
-                </a>
-
-                <a
-                  href={mailLink}
-                  className="flex-1 text-center border rounded-md py-2 px-3 text-sm bg-white hover:bg-gray-50"
-                >
-                  Email
-                  <div className="text-xs text-gray-600 mt-1">
-                    {SUPPORT_EMAIL}
-                  </div>
-                </a>
-              </div>
-            </div>
-
-            <div className="mt-4 text-sm text-gray-700 space-y-1">
-              <p>✅ Hassle-free booking process</p>
-              <p>✅ Trusted drivers with experience</p>
-              <p>✅ Flexible cancellation options</p>
-            </div>
-
-            <div className="mt-5 text-xs text-gray-500 border-t pt-3">
-              Trusted local operator · Safe travel guarantee
-            </div>
-          </aside>
-        </div>
-      </section>
+      </div>
     </div>
   );
 }

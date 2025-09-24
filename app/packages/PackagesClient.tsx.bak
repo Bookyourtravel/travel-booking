@@ -10,7 +10,7 @@ const PACKAGES_LIST = [
     title: "Varanasi → Ayodhya Taxi",
     short: "Reliable intercity taxi with fixed price and driver guide.",
     starting: "₹1,850 (4 pax)",
-    images: ["/images/ayodhya1.jpg", "/images/ayodhya2.jpg"],
+    images: ["/images/ayodhya1.webp", "/images/ayodhya2.webp"],
     badge: "Popular",
   },
   {
@@ -18,7 +18,7 @@ const PACKAGES_LIST = [
     title: "Local Darshan - Kashi Vishwanath",
     short: "Temple darshan + guided walk and Ganga Aarti experience.",
     starting: "₹3,800 (4 pax)",
-    images: ["/images/kashi1.jpg", "/images/kashi2.jpg"],
+    images: ["/images/kashi1.webp", "/images/kashi2.webp"],
     badge: "Top Rated",
   },
   {
@@ -26,28 +26,28 @@ const PACKAGES_LIST = [
     title: "Airport Pickup/Drop",
     short: "Comfortable sedan / Innova with flight tracking options.",
     starting: "₹699 (Pickup)",
-    images: ["/images/airport.jpg"],
+    images: ["/images/lucknow-airport.webp"],
   },
   {
     slug: "prayagraj",
     title: "Varanasi → Prayagraj (Sangam)",
     short: "Day trip or overnight packages with optional hotel add-ons.",
     starting: "₹2,900 (4 pax)",
-    images: ["/images/prayagraj1.jpg", "/images/prayagraj2.jpg"],
+    images: ["/images/prayagraj1.webp", "/images/prayagraj2.webp"],
   },
   {
     slug: "ganga-aarti",
     title: "Evening Ganga Aarti Special",
     short: "Front-row aarti experience with priest and photography.",
     starting: "₹1,599 (per person)",
-    images: ["/images/arti1.jpg", "/images/arti2.jpg"],
+    images: ["/images/arti1.webp", "/images/arti2.webp"],
   },
   {
     slug: "self-drive",
     title: "Self-Drive Cars (Varanasi)",
     short: "Flexible self-drive cars with easy pickup/drop.",
     starting: "₹1,850 / day",
-    images: ["/images/selfdrive1.jpg"],
+    images: ["/images/selfdrive1.webp"],
   },
 ];
 

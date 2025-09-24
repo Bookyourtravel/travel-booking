@@ -13,7 +13,7 @@ const PACKAGES_DETAILS: Record<string, any> = {
     slug: "ayodhya",
     title: "Varanasi → Ayodhya Taxi",
     subtitle: "Ayodhya — The city of Ramayana, temples and heritage",
-    heroImage: "/images/ayodhya1.jpg",
+    heroImage: "/images/ayodhya1.webp",
     starting: "₹1,850 (4 pax)",
     overview:
       "Ayodhya is one of India’s oldest and most revered pilgrimage cities, closely associated with the Ramayana epic. Visitors come for temple darshan, historic sites and a deep spiritual experience.",
@@ -22,7 +22,7 @@ const PACKAGES_DETAILS: Record<string, any> = {
         id: "ram-janmabhoomi",
         title: "Ram Janmabhoomi Complex",
         short: "Birthplace of Lord Rama — newly renovated temple complex.",
-        image: "/images/ayodhya_ram.jpg",
+        image: "/images/ayodhya_ram.webp",
         details:
           "Ram Janmabhoomi is believed to be the birthplace of Lord Rama. The site has immense cultural and religious significance, and the newly reconstructed temple complex is a focal point for devotees. Historically the location has seen many events — archaeological finds, centuries of devotional practices and recent large-scale restoration and development.",
         importance:
@@ -34,7 +34,7 @@ const PACKAGES_DETAILS: Record<string, any> = {
         id: "hanuman-garhi",
         title: "Hanuman Garhi",
         short: "Hill-top Hanuman shrine with panoramic views.",
-        image: "/images/hanuman_garhi.jpg",
+        image: "/images/hanuman_garhi.webp",
         details:
           "Hanuman Garhi is a prominent temple dedicated to Lord Hanuman and sits on a small hill near the old city. It is popular for both its religious importance and the vantage point it offers over Ayodhya’s lanes and ghats.",
         importance:
@@ -45,7 +45,7 @@ const PACKAGES_DETAILS: Record<string, any> = {
         id: "kanak-bhawan",
         title: "Kanak Bhawan",
         short: "A historic temple known for its ornate architecture.",
-        image: "/images/kanak_bhawan.jpg",
+        image: "/images/kanak_bhawan.webp",
         details:
           "Kanak Bhawan is traditionally associated with Sita and has fine carvings and historic idols. It is often visited in combination with other central temples in Ayodhya.",
         importance:
@@ -56,7 +56,7 @@ const PACKAGES_DETAILS: Record<string, any> = {
         id: "heritage-walks",
         title: "Local temples & heritage walks",
         short: "Explore old lanes, small shrines and local markets.",
-        image: "/images/ayodhya_walk.jpg",
+        image: "/images/ayodhya_walk.webp",
         details:
           "Ayodhya’s old city area is best explored on foot with a local guide — narrow lanes, small shrines, traditional shops and stories at every corner. Local guides narrate folklore, historical anecdotes and practical visiting tips.",
         importance:
@@ -79,7 +79,7 @@ const PACKAGES_DETAILS: Record<string, any> = {
     slug: "kashi-darshan",
     title: "Local Darshan - Kashi Vishwanath",
     subtitle: "Kashi Vishwanath and the Ganga Aarti experience",
-    heroImage: "/images/kashi1.jpg",
+    heroImage: "/images/kashi1.webp",
     starting: "₹3,800 (4 pax)",
     overview:
       "Kashi Vishwanath is the spiritual heart of Varanasi. The temple, the ghats and the Ganga Aarti together form an unforgettable experience of devotion and local culture.",
@@ -88,7 +88,7 @@ const PACKAGES_DETAILS: Record<string, any> = {
         id: "kashi-vishwanath",
         title: "Kashi Vishwanath Temple",
         short: "One of the most revered Shiva shrines in India.",
-        image: "/images/kashi_vishwanath.jpg",
+        image: "/images/kashi_vishwanath.webp",
         details:
           "Kashi Vishwanath has been a central place of worship for centuries. The temple has been rebuilt and renovated multiple times; today it welcomes thousands of devotees daily.",
         importance:
@@ -99,7 +99,7 @@ const PACKAGES_DETAILS: Record<string, any> = {
         id: "ganga-aarti",
         title: "Dashashwamedh Ghat & Ganga Aarti",
         short: "Evening ritual on the ghats — pyrotechnic lamps & chants.",
-        image: "/images/ganga_aarti.jpg",
+        image: "/images/ganga_aarti.webp",
         details:
           "The Ganga Aarti at Dashashwamedh Ghat is an atmospheric ritual performed by priests with large brass lamps, synchronized chants and musical accompaniment. Front-row experiences can be pre-booked.",
         importance:
@@ -118,7 +118,7 @@ const PACKAGES_DETAILS: Record<string, any> = {
     slug: "lucknow-airport",
     title: "Airport Pickup/Drop",
     subtitle: "Punctual airport transfers with flight tracking",
-    heroImage: "/images/airport.jpg",
+    heroImage: "/images/lucknow-airport.webp",
     starting: "₹699 (Pickup)",
     overview:
       "Reliable airport pickup/drop service with flight tracking — drivers wait at arrival and assist with luggage and quick transfers.",
@@ -131,7 +131,7 @@ const PACKAGES_DETAILS: Record<string, any> = {
     slug: "prayagraj",
     title: "Varanasi → Prayagraj (Sangam)",
     subtitle: "Triveni Sangam & spiritual confluence",
-    heroImage: "/images/prayagraj1.jpg",
+    heroImage: "/images/prayagraj1.webp",
     starting: "₹2,900 (4 pax)",
     overview:
       "Prayagraj (Allahabad) is famed for the Triveni Sangam — the confluence of three sacred rivers. It’s an important pilgrimage destination and hosts large religious events.",
@@ -140,7 +140,7 @@ const PACKAGES_DETAILS: Record<string, any> = {
         id: "sangam",
         title: "Triveni Sangam",
         short: "Sacred confluence of Ganga, Yamuna and the mythical Saraswati.",
-        image: "/images/sangam.jpg",
+        image: "/images/sangam.webp",
         details:
           "The Sangam is a sacred bathing spot for pilgrims. Boat rides and a sunrise visit create a memorable spiritual experience.",
         importance:
@@ -156,7 +156,7 @@ const PACKAGES_DETAILS: Record<string, any> = {
     slug: "ganga-aarti",
     title: "Evening Ganga Aarti Special",
     subtitle: "Front-row aarti experience with priest & photography",
-    heroImage: "/images/arti1.jpg",
+    heroImage: "/images/arti1.webp",
     starting: "₹1,599 (per person)",
     overview:
       "Front-row Ganga Aarti is an exclusive package for visitors who want the closest, most immersive aarti experience with photography and priest assistance.",
@@ -169,7 +169,7 @@ const PACKAGES_DETAILS: Record<string, any> = {
     slug: "self-drive",
     title: "Self-Drive Cars (Varanasi)",
     subtitle: "Flexible self-drive rentals — hourly / daily",
-    heroImage: "/images/selfdrive1.jpg",
+    heroImage: "/images/selfdrive1.webp",
     starting: "₹1,850 / day",
     overview:
       "Self-drive rentals give you flexibility to explore Varanasi at your own pace. Documentation assistance and pickup/drop options available.",
@@ -203,7 +203,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       url: `https://bookyourtravell.com/packages/${params.slug}`,
       images: [
         {
-          url: pkg.heroImage || "/images/og-image.jpg",
+          url: pkg.heroImage || "/images/og-image.webp",
           width: 1200,
           height: 630,
         },

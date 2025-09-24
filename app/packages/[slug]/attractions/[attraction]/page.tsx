@@ -37,7 +37,7 @@ export default function AttractionPage({ params }: Props) {
   const heroImage =
     (attraction.images && attraction.images[0]) ||
     (pkg.images && pkg.images[0]) ||
-    "/images/ayodhya3.jpg";
+    "/images/ayodhya3.webp";
 
   return (
     <main className="relative min-h-screen font-sans bg-white">

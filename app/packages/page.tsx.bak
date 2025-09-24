@@ -11,7 +11,7 @@ export const metadata = {
     title: "Packages — BookYourTravell",
     description:
       "Curated Varanasi packages — temple darshan, day trips, airport transfers and self-drive options.",
-    images: ["/images/kashi1.jpg"],
+    images: ["/images/kashi1.webp"],
   },
 };
 
