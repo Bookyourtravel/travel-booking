@@ -13,7 +13,8 @@ function makeWhatsappLink(phone: string, text: string) {
   return `https://wa.me/${digits}?text=${encoded}`;
 }
 
-export async function generateMetadata({ params }: { params: { slug: string; attraction: string } }) {
+export async function generateMetadata(props: any) {
+  const params = props?.params as { slug: string; attraction: string };
   const pkg = PACKAGES_DATA[params.slug];
   if (!pkg) return {};
 
@@ -148,7 +149,7 @@ function buildJsonLd(pkg: any, attraction: any) {
   };
 }
 
-export default function AttractionPage({ params }: { params: { slug: string; attraction: string } }) {
+export default function AttractionPage({ params }: any) {
   const pkg = PACKAGES_DATA[params.slug];
   if (!pkg) return notFound();
 
