@@ -1,17 +1,14 @@
 // app/packages/[slug]/page.tsx
 import React from "react";
 import { notFound } from "next/navigation";
+import Script from "next/script";
 import PACKAGES_DATA from "@/lib/packages-data";
-import PackagesClient from "../PackagesClient"; // relative import - client listing component
 import BackgroundSlideshowClient from "../BackgroundSlideshowClient";
 import { SUPPORT_PHONE, WHATSAPP_NUMBER, SUPPORT_EMAIL } from "@/lib/constants";
 
-interface Props {
-  params: { slug: string };
-}
-
-// ✅ generateMetadata (पहले जैसा)
-export async function generateMetadata({ params }: Props) {
+// ---- generateMetadata ----
+export async function generateMetadata(props: any) {
+  const params = (props && props.params) as { slug: string };
   const pkg = PACKAGES_DATA[params.slug];
   if (!pkg) return {};
 
@@ -26,186 +23,171 @@ export async function generateMetadata({ params }: Props) {
     `${titleBase} from BookYourTravell — trusted drivers, transparent fares and easy booking.`;
 
   const primaryImage = pkg.heroImage || (pkg.images && pkg.images[0]) || "/images/og-image.webp";
-  const imageCandidates: { url: string; width?: number; height?: number; alt?: string }[] = [
-    { url: primaryImage.startsWith("http") ? primaryImage : `${siteOrigin}${primaryImage}`, width: 1200, height: 630, alt: titleBase },
-  ];
-  if (pkg.images && Array.isArray(pkg.images)) {
-    pkg.images.slice(0, 3).forEach((p) => {
-      const url = p.startsWith("http") ? p : `${siteOrigin}${p}`;
-      if (!imageCandidates.find((c) => c.url === url)) {
-        imageCandidates.push({ url, width: 1200, height: 630 });
-      }
-    });
-  }
+  const imageFull = primaryImage.startsWith("http") ? primaryImage : `${siteOrigin}${primaryImage}`;
 
   const keywords = [
-    "Varanasi car rental",
-    "self drive car varanasi",
+    "Varanasi packages",
+    "tour package " + (pkg.slug || ""),
+    "temple darshan",
     "Varanasi taxi",
-    "car rental varanasi",
-    ...(pkg.title ? [pkg.title.replace(/\s+/g, " ")] : []),
-  ];
+    "self drive car",
+    "airport transfer",
+    "Ayodhya trip",
+    "Prayagraj trip",
+    "Ganga Aarti",
+    "book cab varanasi",
+  ].filter(Boolean);
 
   return {
     title,
     description,
     keywords,
-    alternates: { canonical: pageUrl },
     metadataBase: new URL(siteOrigin),
+    alternates: { canonical: pageUrl },
     openGraph: {
       title,
       description,
       url: pageUrl,
       siteName: "BookYourTravell",
-      images: imageCandidates,
-      type: "website",
+      images: [
+        {
+          url: imageFull,
+          alt: `${titleBase} — BookYourTravell`,
+          width: 1200,
+          height: 630,
+        },
+      ],
       locale: "en_IN",
+      type: "article",
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: imageCandidates.map((i) => i.url),
+      images: [imageFull],
     },
-    robots: {
-      index: true,
-      follow: true,
-      googleBot: {
-        index: true,
-        follow: true,
-        "max-video-preview": -1,
-        "max-image-preview": "large",
-        "max-snippet": -1,
-      },
-    },
-    other: {
-      "package-slug": pkg.slug,
-      "structured-data-needed": true,
-    },
+    robots: { index: true, follow: true },
   } as any;
 }
 
-export default function PackagePage({ params }: Props) {
-  const pkg = PACKAGES_DATA[params.slug];
-  if (!pkg) return notFound();
-
-  // build quick links for sidebar CTA
-  const waClean = WHATSAPP_NUMBER.replace(/^\+/, "");
-  const waLink = `https://wa.me/${waClean}?text=${encodeURIComponent(`Hi, I want info for "${pkg.titleHero || pkg.title}"`)}`;
-  const telLink = `tel:${SUPPORT_PHONE}`;
-  const mailLink = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(`Inquiry: ${pkg.titleHero || pkg.title}`)}`;
-
-  // ====== Structured data (JSON-LD) for this package page ======
-  // LocalBusiness details (site-wide / business-level)
+// ---- JSON-LD Builder ----
+function buildJsonLdObject(pkg: any) {
   const siteOrigin = (process.env.NEXT_PUBLIC_SITE_ORIGIN || "https://bookyourtravell.com").replace(/\/$/, "");
+  const pageUrl = `${siteOrigin}/packages/${pkg.slug}`;
+
   const business = {
     "@type": "LocalBusiness",
     "@id": `${siteOrigin}#business`,
-    "name": "BookYourTravell",
-    "image": `${siteOrigin}/images/og-image.webp`,
-    "telephone": "+91-9389971003",
-    "email": "shivam211019@gmail.com",
-    "address": {
+    name: "BookYourTravell",
+    url: siteOrigin,
+    telephone: SUPPORT_PHONE,
+    email: SUPPORT_EMAIL,
+    address: {
       "@type": "PostalAddress",
-      "streetAddress": "53, Dhodha, Hatiya, Shivpur",
-      "addressLocality": "Varanasi",
-      "addressRegion": "UP",
-      "postalCode": "221003",
-      "addressCountry": "IN"
+      streetAddress: "53, Ghodha, Hatiya, Shivapur",
+      addressLocality: "Varanasi",
+      addressRegion: "UP",
+      postalCode: "221003",
+      addressCountry: "IN",
     },
-    "priceRange": "₹₹",
-    "url": siteOrigin,
-    "aggregateRating": {
+    priceRange: "₹₹",
+    image: `${siteOrigin}/images/og-image.webp`,
+    aggregateRating: {
       "@type": "AggregateRating",
-      "ratingValue": "4.8",
-      "reviewCount": "120" // adjust if you have exact count
-    }
+      ratingValue: "4.8",
+      reviewCount: "120",
+    },
   };
 
-  // Service/Offer for this package
-  const serviceForPackage: any = {
+  const service: any = {
     "@type": "Service",
-    "@id": `${siteOrigin}/packages/${pkg.slug}#service`,
-    "name": pkg.titleHero || pkg.title,
-    "description": pkg.overview || pkg.short || `${pkg.title} by BookYourTravell.`,
-    "provider": { "@id": business["@id"] },
-    "areaServed": { "@type": "City", "name": "Varanasi" },
+    "@id": `${pageUrl}#service`,
+    name: pkg.titleHero || pkg.title,
+    description: pkg.overview || pkg.short || "",
+    provider: { "@id": `${siteOrigin}#business` },
+    areaServed: { "@type": "City", name: "Varanasi" },
   };
 
-  // Offer (starting price if present)
   if (pkg.starting) {
-    serviceForPackage.offers = {
-      "@type": "Offer",
-      "price": pkg.starting.replace(/[^\d.]/g, "") || undefined,
-      "priceCurrency": "INR",
-      "url": `${siteOrigin}/packages/${pkg.slug}`,
-      "availability": "https://schema.org/InStock"
-    };
+    const priceStr = String(pkg.starting).replace(/[^\d.]/g, "");
+    if (priceStr) {
+      service.offers = {
+        "@type": "Offer",
+        url: pageUrl,
+        priceCurrency: "INR",
+        price: priceStr,
+        availability: "https://schema.org/InStock",
+      };
+    }
   }
 
-  // Breadcrumb
   const breadcrumb = {
     "@type": "BreadcrumbList",
-    "itemListElement": [
-      { "@type": "ListItem", "position": 1, "name": "Home", "item": siteOrigin },
-      { "@type": "ListItem", "position": 2, "name": "Packages", "item": `${siteOrigin}/packages` },
-      { "@type": "ListItem", "position": 3, "name": pkg.titleHero || pkg.title, "item": `${siteOrigin}/packages/${pkg.slug}` }
-    ]
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: siteOrigin },
+      { "@type": "ListItem", position: 2, name: "Packages", item: `${siteOrigin}/packages` },
+      { "@type": "ListItem", position: 3, name: pkg.titleHero || pkg.title, item: pageUrl },
+    ],
   };
 
-  // FAQ (4 Q/A — change as you like)
   const faqs = {
     "@type": "FAQPage",
-    "mainEntity": [
+    mainEntity: [
       {
         "@type": "Question",
-        "name": "क्या self-drive cars के लिए ड्राइवर की ज़रूरत होती है?",
-        "acceptedAnswer": {
+        name: "क्या self-drive cars के लिए ड्राइवर की ज़रूरत होती है?",
+        acceptedAnswer: {
           "@type": "Answer",
-          "text": "नहीं — self-drive विकल्प में आप खुद गाड़ी चला सकते हैं। हमारी टीम pickup/drop और जरूरी paperwork में सहायता करेगी।"
-        }
+          text: "नहीं — self-drive विकल्प में आप खुद गाड़ी चला सकते हैं।",
+        },
       },
       {
         "@type": "Question",
-        "name": "क्या fuel और toll charges कीमत में शामिल हैं?",
-        "acceptedAnswer": {
+        name: "क्या fuel और toll charges कीमत में शामिल हैं?",
+        acceptedAnswer: {
           "@type": "Answer",
-          "text": "कुछ packages में fuel शामिल होता है — पर ज्यादातर इंटरसिटी और self-drive bookings में fuel/toll अलग से चार्ज होते हैं। पेज पर 'starting price' के विवरण में यह लिखा होगा।"
-        }
+          text: "ज्यादातर packages में fuel/toll अलग होते हैं। Details booking page पर लिखे होते हैं।",
+        },
       },
       {
         "@type": "Question",
-        "name": "क्या online payment और refund विकल्प उपलब्ध हैं?",
-        "acceptedAnswer": {
+        name: "क्या online payment और refund विकल्प उपलब्ध हैं?",
+        acceptedAnswer: {
           "@type": "Answer",
-          "text": "हाँ — Razorpay के माध्यम से online payment उपलब्ध है। cancellation policy के हिसाब से full/partial refund दिया जा सकता है।"
-        }
+          text: "हाँ — Razorpay से online payment और cancellation policy के हिसाब से refund उपलब्ध है।",
+        },
       },
-      {
-        "@type": "Question",
-        "name": "क्या हम गाड़ी को किसी और शहर में drop कर सकते हैं (one-way)?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "हां, कुछ routes और vehicle types के लिए one-way drop possible है — इसके लिए अलग charges लागू हो सकते हैं। Booking से पहले details confirm कर लें।"
-        }
-      }
-    ]
+    ],
   };
 
-  const graph = [business, serviceForPackage, breadcrumb, faqs];
-  const jsonLd = { "@context": "https://schema.org", "@graph": graph };
+  return {
+    "@context": "https://schema.org",
+    "@graph": [business, service, breadcrumb, faqs],
+  };
+}
 
-  // ===============================================================
+// ---- Page Component ----
+export default function PackagePage(props: any) {
+  const params = (props && props.params) as { slug: string };
+  const pkg = PACKAGES_DATA[params.slug];
+  if (!pkg) return notFound();
+
+  const jsonLdObject = buildJsonLdObject(pkg);
+
+  const waClean = (WHATSAPP_NUMBER || "").replace(/^\+/, "");
+  const waLink = `https://wa.me/${waClean}?text=${encodeURIComponent(`Hi, I want info for "${pkg.titleHero || pkg.title}"`)}`;
+  const telLink = `tel:${SUPPORT_PHONE}`;
+  const mailLink = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(`Inquiry: ${pkg.titleHero || pkg.title}`)}`;
 
   return (
     <main className="relative min-h-screen font-sans">
       <BackgroundSlideshowClient />
 
-      {/* Insert structured data JSON-LD for crawlers (server-rendered script) */}
-      <script
+      <Script
+        id={`pkg-jsonld-${pkg.slug}`}
         type="application/ld+json"
-        // eslint-disable-next-line react/no-danger
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        strategy="afterInteractive"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdObject) }}
       />
 
       <div className="relative z-10">
@@ -274,7 +256,7 @@ export default function PackagePage({ params }: Props) {
                 <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-md">
                   <h2 className="text-2xl font-bold mb-4 text-orange-600">Top Attractions</h2>
                   <div className="space-y-4">
-                    {pkg.attractions.map((a) => (
+                    {pkg.attractions.map((a: any) => (
                       <div
                         key={a.slug}
                         className="flex items-center justify-between border rounded-lg p-4 hover:bg-orange-50 transition"
