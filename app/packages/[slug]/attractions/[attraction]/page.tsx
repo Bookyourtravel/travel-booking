@@ -2,13 +2,10 @@
 import React from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import Script from "next/script";
 import PACKAGES_DATA from "@/lib/packages-data";
 import BackgroundSlideshowClient from "@/app/packages/BackgroundSlideshowClient";
-import { SUPPORT_PHONE, SUPPORT_EMAIL } from "@/lib/constants";
-
-type Props = {
-  params: { slug: string; attraction: string };
-};
+import { SUPPORT_PHONE, SUPPORT_EMAIL, WHATSAPP_NUMBER } from "@/lib/constants";
 
 function makeWhatsappLink(phone: string, text: string) {
   const digits = phone.replace(/\D/g, "");
@@ -16,7 +13,142 @@ function makeWhatsappLink(phone: string, text: string) {
   return `https://wa.me/${digits}?text=${encoded}`;
 }
 
-export default function AttractionPage({ params }: Props) {
+export async function generateMetadata({ params }: { params: { slug: string; attraction: string } }) {
+  const pkg = PACKAGES_DATA[params.slug];
+  if (!pkg) return {};
+
+  const attraction = pkg.attractions?.find((a: any) => a.slug === params.attraction);
+  if (!attraction) return {};
+
+  const siteOrigin = (process.env.NEXT_PUBLIC_SITE_ORIGIN || "https://bookyourtravell.com").replace(/\/$/, "");
+  const pageUrl = `${siteOrigin}/packages/${pkg.slug}/attractions/${attraction.slug}`;
+  const titleBase = attraction.title || attraction.short || pkg.title || "Attraction";
+  const title = `${titleBase} — ${pkg.title || "BookYourTravell"}`;
+
+  const description =
+    (attraction.long && attraction.long.replace(/\s+/g, " ").trim().slice(0, 155)) ||
+    attraction.short ||
+    pkg.short ||
+    `${titleBase} — details, timings and booking from BookYourTravell.`;
+
+  const heroImage =
+    (attraction.images && attraction.images[0]) ||
+    (pkg.images && pkg.images[0]) ||
+    "/images/ayodhya3.webp";
+  const imageFull = heroImage.startsWith("http") ? heroImage : `${siteOrigin}${heroImage}`;
+
+  const keywords = [
+    "Varanasi attractions",
+    `${attraction.slug || titleBase} attractions`,
+    `${pkg.slug || "package"} attraction`,
+    "temple darshan",
+    "Ganga aarti",
+    "Ayodhya visit",
+    "Prayagraj sightseeing",
+    "Varanasi tour",
+    "book cab varanasi",
+  ].filter(Boolean);
+
+  return {
+    title,
+    description,
+    keywords,
+    metadataBase: new URL(siteOrigin),
+    alternates: { canonical: pageUrl },
+    openGraph: {
+      title,
+      description,
+      url: pageUrl,
+      siteName: "BookYourTravell",
+      images: [
+        {
+          url: imageFull,
+          alt: `${titleBase} — BookYourTravell`,
+          width: 1200,
+          height: 630,
+        },
+      ],
+      locale: "en_IN",
+      type: "article",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [imageFull],
+    },
+    robots: { index: true, follow: true },
+  } as any;
+}
+
+function buildJsonLd(pkg: any, attraction: any) {
+  const siteOrigin = (process.env.NEXT_PUBLIC_SITE_ORIGIN || "https://bookyourtravell.com").replace(/\/$/, "");
+  const pageUrl = `${siteOrigin}/packages/${pkg.slug}/attractions/${attraction.slug}`;
+
+  const business = {
+    "@type": "LocalBusiness",
+    "@id": `${siteOrigin}#business`,
+    name: "BookYourTravell",
+    url: siteOrigin,
+    telephone: SUPPORT_PHONE,
+    email: SUPPORT_EMAIL,
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: "53, Ghodha, Hatiya, Shivapur",
+      addressLocality: "Varanasi",
+      addressRegion: "UP",
+      postalCode: "221003",
+      addressCountry: "IN",
+    },
+  };
+
+  const attractionLd = {
+    "@type": "TouristAttraction",
+    name: attraction.title,
+    description: (attraction.short || "").slice(0, 300),
+    url: pageUrl,
+    image: attraction.images && attraction.images.length ? attraction.images[0] : `${siteOrigin}/images/ayodhya3.webp`,
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: "Varanasi",
+      addressRegion: "UP",
+      addressCountry: "IN",
+    },
+  };
+
+  const breadcrumb = {
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: siteOrigin },
+      { "@type": "ListItem", position: 2, name: "Packages", item: `${siteOrigin}/packages` },
+      { "@type": "ListItem", position: 3, name: pkg.title || "Package", item: `${siteOrigin}/packages/${pkg.slug}` },
+      { "@type": "ListItem", position: 4, name: attraction.title || "Attraction", item: pageUrl },
+    ],
+  };
+
+  const faqs = {
+    "@type": "FAQPage",
+    mainEntity: [
+      {
+        "@type": "Question",
+        name: "क्या यहाँ पहुँचने के लिए guide उपलब्ध है?",
+        acceptedAnswer: { "@type": "Answer", text: "हाँ — local guide request पर arrange किया जा सकता है।" },
+      },
+      {
+        "@type": "Question",
+        name: "क्या यहाँ parking और restrooms उपलब्ध हैं?",
+        acceptedAnswer: { "@type": "Answer", text: "अधिकतर attractions पर basic facilities उपलब्ध हैं; विवरण attraction page पर दिया गया है।" },
+      },
+    ],
+  };
+
+  return {
+    "@context": "https://schema.org",
+    "@graph": [business, attractionLd, breadcrumb, faqs],
+  };
+}
+
+export default function AttractionPage({ params }: { params: { slug: string; attraction: string } }) {
   const pkg = PACKAGES_DATA[params.slug];
   if (!pkg) return notFound();
 
@@ -25,24 +157,24 @@ export default function AttractionPage({ params }: Props) {
   if (!attraction) return notFound();
 
   const bookText = `Hi, I want to book *${pkg.title}* — attraction: ${attraction.title}. Please help.`;
-  const whatsappLink = makeWhatsappLink(SUPPORT_PHONE, bookText);
+  const whatsappLink = makeWhatsappLink(WHATSAPP_NUMBER || SUPPORT_PHONE || "", bookText);
   const telLink = `tel:${SUPPORT_PHONE.replace(/\s+/g, "")}`;
-  const mailLink = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(
-    `Booking request: ${pkg.title} - ${attraction.title}`
-  )}&body=${encodeURIComponent(
-    `Hi,\n\nI want to book ${pkg.title} (attraction: ${attraction.title}). Please contact me.\n\nThanks.`
-  )}`;
+  const mailLink = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(`Booking request: ${pkg.title} - ${attraction.title}`)}`;
 
-  // hero background: use first attraction image if present, else fallback to package image
   const heroImage =
     (attraction.images && attraction.images[0]) ||
     (pkg.images && pkg.images[0]) ||
     "/images/ayodhya3.webp";
 
+  const jsonLdObject = buildJsonLd(pkg, attraction);
+
   return (
     <main className="relative min-h-screen font-sans bg-white">
       {/* watermark slideshow behind content */}
       <BackgroundSlideshowClient />
+
+      {/* structured data */}
+      <Script id={`attraction-jsonld-${pkg.slug}-${attraction.slug}`} type="application/ld+json" strategy="afterInteractive" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdObject) }} />
 
       {/* hero with dark overlay to keep text readable (matches existing site look) */}
       <section
