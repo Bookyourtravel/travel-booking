@@ -22,7 +22,7 @@ const cspDev = `
 const cspProd = `
   default-src 'self';
   img-src 'self' data: https:;
-  connect-src 'self' https://www.google-analytics.com https://www.googleapis.com https://www.recaptcha.net https://www.gstatic.com https://fonts.googleapis.com https://fonts.gstatic.com;
+  script-src 'self' 'unsafe-inline' https: https://www.google.com https://www.gstatic.com https://www.recaptcha.net;
   font-src 'self' https://fonts.gstatic.com;
   style-src 'self' 'unsafe-inline' https:;
   script-src 'self' https: https://www.google.com https://www.gstatic.com https://www.recaptcha.net;
