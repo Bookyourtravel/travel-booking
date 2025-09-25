@@ -8,7 +8,9 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "chalk": "^4.1.2",
     "framer-motion": "^12.23.16",
+    "glob": "^11.0.3",
     "next": "15.5.3",
     "nprogress": "^0.2.0",
     "razorpay": "^2.9.6",
@@ -19,6 +21,7 @@
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/nprogress": "^0.2.3",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",

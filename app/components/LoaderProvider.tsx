@@ -1,6 +1,7 @@
+// app/components/LoaderProvider.tsx
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import NProgress from "nprogress";
 import "nprogress/nprogress.css";
 import { usePathname } from "next/navigation";
@@ -12,26 +13,58 @@ export default function LoaderProvider() {
   const pathname = usePathname();
   const [loading, setLoading] = useState(false);
 
+  // ref to avoid scheduling multiple setTimeouts and to track mounted state
+  const scheduledRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isMountedRef = useRef(false);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+      if (scheduledRef.current) {
+        clearTimeout(scheduledRef.current);
+        scheduledRef.current = null;
+      }
+    };
+  }, []);
+
   useEffect(() => {
     // When pathname changes (navigation complete in app-router), finish progress.
     if (!pathname) return;
-    // small safety: ensure NProgress was started (if started by pushState/click)
     NProgress.done();
+
     // hide our loading badge shortly after done
-    const t = setTimeout(() => setLoading(false), 250);
-    return () => clearTimeout(t);
+    if (scheduledRef.current) {
+      clearTimeout(scheduledRef.current);
+      scheduledRef.current = null;
+    }
+    scheduledRef.current = setTimeout(() => {
+      // safety: only update if still mounted
+      if (isMountedRef.current) setLoading(false);
+      scheduledRef.current = null;
+    }, 250);
+
+    return () => {
+      if (scheduledRef.current) {
+        clearTimeout(scheduledRef.current);
+        scheduledRef.current = null;
+      }
+    };
   }, [pathname]);
 
   useEffect(() => {
-    // helper to start progress and set loading state
+    // helper to start progress and set loading state (scheduled to avoid insertion-phase updates)
     const start = () => {
-      setLoading(true);
-      // if already started, don't restart
-      if (!NProgress.isStarted?.()) {
-        // NProgress.has no official isStarted in types, but some builds have it;
-        // calling start() multiple times is harmless.
-      }
+      // start the visual progress immediately
       NProgress.start();
+
+      // schedule setting the React state outside of insertion phase / sync handlers
+      if (!scheduledRef.current) {
+        scheduledRef.current = setTimeout(() => {
+          scheduledRef.current = null;
+          if (isMountedRef.current) setLoading(true);
+        }, 0); // schedule next tick (microtask-ish)
+      }
     };
 
     // Patch history.pushState and history.replaceState so SPA navigations trigger loader immediately
@@ -90,6 +123,11 @@ export default function LoaderProvider() {
       history.replaceState = origReplace;
       window.removeEventListener("click", onClick, true);
       window.removeEventListener("popstate", onPop);
+
+      if (scheduledRef.current) {
+        clearTimeout(scheduledRef.current);
+        scheduledRef.current = null;
+      }
     };
   }, []);
 

@@ -10,6 +10,52 @@ import dynamic from "next/dynamic";
 const SUPPORT_PHONE = "+919389971003";
 const SUPPORT_EMAIL = "shivam211019@gmail.com";
 
+/* ----------------- Page-level metadata (for app router) ----------------- */
+/* Note: app router prefers server-exported metadata; keeping this const here
+   so it's visible to you — app/layout.tsx already sets site-wide metadata.
+   If you want fully server-side metadata, we'll move this to a server page later. */
+export const metadata = {
+  title: "Car Rental Varanasi | Self Drive Car in Varanasi — BookYourTravell",
+  description:
+    "Car rental Varanasi — Self drive cars, chauffeur-driven taxis, airport pick-up and local temple tours. BookYourTravell provides trusted car booking & travel services in Varanasi.",
+  keywords: [
+    "car rental varanasi",
+    "self drive car in varanasi",
+    "travel services in varanasi",
+    "car booking",
+    "car rental near me",
+    "varanasi taxi",
+    "kashi car rental",
+  ],
+  alternates: {
+    canonical: "https://bookyourtravell.com/",
+  },
+  openGraph: {
+    title: "Car Rental Varanasi | BookYourTravell",
+    description:
+      "Self drive & chauffeur-driven car rental in Varanasi. Airport transfer, temple tours, and local travel services — easy booking.",
+    url: "https://bookyourtravell.com",
+    siteName: "BookYourTravell",
+    images: [
+      {
+        url: "https://bookyourtravell.com/images/og-image.webp",
+        alt: "Car Rental Varanasi - BookYourTravell",
+        width: 1200,
+        height: 630,
+      },
+    ],
+    locale: "en_IN",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Car Rental Varanasi — BookYourTravell",
+    description:
+      "Self drive & chauffeur-driven car rental in Varanasi. Book taxi, book car, travel services near you.",
+    images: ["https://bookyourtravell.com/images/og-image.webp"],
+  },
+};
+
 /* -------------------- Data -------------------- */
 const PACKAGES = [
   {
@@ -326,13 +372,14 @@ export default function HomePage() {
         <div className="relative z-10 max-w-7xl mx-auto px-6 w-full">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
             <div className="lg:col-span-8">
+              {/* Keyword-rich H1 for on-page SEO */}
               <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight text-white drop-shadow-lg">
-                Experience Kashi — Sunrise Ganges, Timeless Stories
+                Car Rental Varanasi — Self Drive & Chauffeur Driven Car Booking
               </h1>
 
               <p className="mt-4 text-base sm:text-lg md:text-xl text-white/90 max-w-3xl">
-                Handpicked local experiences, honest fares and drivers who know the city.
-                Book temple visits, day trips or multi-stop journeys — tailored to how you travel.
+                BookYourTravell offers trusted car rental in Varanasi: self-drive cars, chauffeur-driven taxis, airport transfers and local travel services.
+                Fast quotes, verified drivers, and easy online car booking — ideal for travellers searching “car rental near me” or “self drive car in Varanasi”.
               </p>
 
               <div className="mt-6 flex flex-wrap items-center gap-3">

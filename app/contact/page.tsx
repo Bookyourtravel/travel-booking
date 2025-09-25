@@ -6,8 +6,39 @@ import { SUPPORT_EMAIL, SUPPORT_PHONE, WHATSAPP_NUMBER } from "@/lib/constants";
 
 export const metadata = {
   title: "Contact — BookYourTravell",
-  description:
-    "Contact BookYourTravell — WhatsApp, call or email for bookings and support.",
+  description: "Contact BookYourTravell — WhatsApp, call or email for bookings and support.",
+  keywords: [
+    "BookYourTravell contact",
+    "Varanasi taxi contact",
+    "WhatsApp booking Varanasi",
+    "book taxi varanasi contact",
+    "Varanasi travel support",
+  ],
+  alternates: {
+    canonical: "https://bookyourtravell.com/contact",
+  },
+  openGraph: {
+    title: "Contact — BookYourTravell",
+    description: "Contact BookYourTravell — WhatsApp, call or email for bookings and support.",
+    url: "https://bookyourtravell.com/contact",
+    siteName: "BookYourTravell",
+    images: [
+      {
+        url: "https://bookyourtravell.com/images/og-image.webp",
+        alt: "BookYourTravell — Contact for bookings & support",
+        width: 1200,
+        height: 630,
+      },
+    ],
+    locale: "en_IN",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Contact — BookYourTravell",
+    description: "Contact BookYourTravell — WhatsApp, call or email for bookings and support.",
+    images: ["https://bookyourtravell.com/images/og-image.webp"],
+  },
 };
 
 function waLink(number?: string, text?: string) {
@@ -24,12 +55,79 @@ Destination:
 Passengers:
 Extras (child seat, hotel, guide):`;
 
+  // Build optimized JSON-LD with LocalBusiness + ContactPoint + ContactPage
+  const phone = SUPPORT_PHONE || "+919389971003";
+  const email = SUPPORT_EMAIL || "shivam211019@gmail.com";
+  const siteUrl = "https://bookyourtravell.com";
+  const pageUrl = `${siteUrl}/contact`;
+
+  const ldObject = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "LocalBusiness",
+        "@id": `${siteUrl}/#localbusiness`,
+        name: "BookYourTravell",
+        url: siteUrl,
+        image: `${siteUrl}/images/og-image.webp`,
+        telephone: phone,
+        email: email,
+        address: {
+          "@type": "PostalAddress",
+          streetAddress: "53, Ghodha, Hatiya, Shivapur",
+          addressLocality: "Varanasi",
+          addressRegion: "UP",
+          postalCode: "221003",
+          addressCountry: "IN",
+        },
+        sameAs: [`https://wa.me/${phone.replace(/^\+/, "")}`],
+        priceRange: "₹₹",
+        contactPoint: [
+          {
+            "@type": "ContactPoint",
+            telephone: phone,
+            contactType: "customer support",
+            areaServed: ["IN"],
+            availableLanguage: ["English", "Hindi"],
+            contactOption: "TollFree",
+          },
+          {
+            "@type": "ContactPoint",
+            telephone: phone,
+            contactType: "sales",
+            availableLanguage: ["English", "Hindi"],
+          },
+        ],
+      },
+      {
+        "@type": "ContactPage",
+        "@id": `${pageUrl}#contactpage`,
+        url: pageUrl,
+        name: "Contact — BookYourTravell",
+        description: "Contact BookYourTravell for bookings, WhatsApp, phone or email support.",
+        primaryImageOfPage: `${siteUrl}/images/og-image.webp`,
+      },
+    ],
+  };
+
+  const ldJson = JSON.stringify(ldObject);
+
   return (
     <>
-      {/* reCAPTCHA script */}
+      {/* reCAPTCHA script (will not execute if NEXT_PUBLIC_RECAPTCHA_SITE_KEY missing) */}
+      {process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY ? (
+        <Script
+          src={`https://www.google.com/recaptcha/api.js?render=${process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}`}
+          strategy="afterInteractive"
+        />
+      ) : null}
+
+      {/* JSON-LD for LocalBusiness + ContactPoint + ContactPage */}
       <Script
-        src={`https://www.google.com/recaptcha/api.js?render=${process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}`}
+        id="contact-ldjson"
+        type="application/ld+json"
         strategy="afterInteractive"
+        dangerouslySetInnerHTML={{ __html: ldJson }}
       />
 
       <main className="min-h-screen py-12">
@@ -40,9 +138,7 @@ Extras (child seat, hotel, guide):`;
               Contact Us
             </h1>
             <p className="mt-2 text-gray-700 max-w-2xl">
-              We’re here to help — for quick quotes use WhatsApp, for urgent help
-              call, or drop an email. Paste the quick template below to get a fast
-              price & availability reply.
+              We’re here to help — for quick quotes use WhatsApp, for urgent help call, or drop an email. Paste the quick template below to get a fast price & availability reply.
             </p>
           </div>
         </div>
@@ -57,16 +153,14 @@ Extras (child seat, hotel, guide):`;
                 </div>
                 <div>
                   <div className="text-lg font-semibold">WhatsApp</div>
-                  <div className="text-sm text-gray-600 mt-1">
-                    Fast replies — message us directly.
-                  </div>
+                  <div className="text-sm text-gray-600 mt-1">Fast replies — message us directly.</div>
                   <a
                     href={waLink(WHATSAPP_NUMBER, sample)}
                     target="_blank"
                     rel="noreferrer"
                     className="mt-3 inline-block text-green-800 font-medium"
                   >
-                    {WHATSAPP_NUMBER}
+                    {WHATSAPP_NUMBER || "WhatsApp"}
                   </a>
                 </div>
               </div>
@@ -79,13 +173,8 @@ Extras (child seat, hotel, guide):`;
                 </div>
                 <div>
                   <div className="text-lg font-semibold">Call</div>
-                  <div className="text-sm text-gray-600 mt-1">
-                    Speak with our support team quickly.
-                  </div>
-                  <a
-                    href={`tel:${SUPPORT_PHONE}`}
-                    className="mt-3 inline-block text-rose-600 font-medium"
-                  >
+                  <div className="text-sm text-gray-600 mt-1">Speak with our support team quickly.</div>
+                  <a href={`tel:${SUPPORT_PHONE}`} className="mt-3 inline-block text-rose-600 font-medium">
                     {SUPPORT_PHONE}
                   </a>
                 </div>
@@ -99,13 +188,8 @@ Extras (child seat, hotel, guide):`;
                 </div>
                 <div>
                   <div className="text-lg font-semibold">Email</div>
-                  <div className="text-sm text-gray-600 mt-1">
-                    Send details; we’ll reply with next steps.
-                  </div>
-                  <a
-                    href={`mailto:${SUPPORT_EMAIL}`}
-                    className="mt-3 inline-block text-sky-700 font-medium"
-                  >
+                  <div className="text-sm text-gray-600 mt-1">Send details; we’ll reply with next steps.</div>
+                  <a href={`mailto:${SUPPORT_EMAIL}`} className="mt-3 inline-block text-sky-700 font-medium">
                     {SUPPORT_EMAIL}
                   </a>
                 </div>
@@ -114,12 +198,8 @@ Extras (child seat, hotel, guide):`;
 
             {/* trust badges */}
             <div className="mt-3 flex gap-3 items-center">
-              <div className="px-3 py-2 bg-white border rounded shadow text-sm">
-                ✅ Trusted drivers
-              </div>
-              <div className="px-3 py-2 bg-white border rounded shadow text-sm">
-                🔒 Secure booking
-              </div>
+              <div className="px-3 py-2 bg-white border rounded shadow text-sm">✅ Trusted drivers</div>
+              <div className="px-3 py-2 bg-white border rounded shadow text-sm">🔒 Secure booking</div>
             </div>
           </div>
 
@@ -128,8 +208,7 @@ Extras (child seat, hotel, guide):`;
             <div className="bg-white border rounded-xl shadow p-6">
               <h3 className="text-xl font-semibold mb-2">Quick booking info</h3>
               <p className="text-sm text-gray-600 mb-3">
-                Copy the template and paste into WhatsApp or email — fastest way to
-                get price & availability.
+                Copy the template and paste into WhatsApp or email — fastest way to get price & availability.
               </p>
 
               <pre className="bg-gray-50 border rounded p-4 text-sm text-gray-800 whitespace-pre-wrap">
@@ -147,9 +226,7 @@ Extras (child seat, hotel, guide):`;
                 </a>
 
                 <a
-                  href={`mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(
-                    "Booking enquiry"
-                  )}&body=${encodeURIComponent(sample)}`}
+                  href={`mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent("Booking enquiry")}&body=${encodeURIComponent(sample)}`}
                   className="inline-block px-4 py-2 rounded border bg-white text-gray-700"
                 >
                   Send Email
@@ -179,8 +256,7 @@ Extras (child seat, hotel, guide):`;
               <h4 className="font-semibold">Office</h4>
               <p className="text-sm text-gray-600">BookYourTravell — Local operator, Varanasi</p>
               <p className="mt-2 text-sm">
-                <strong>Address:</strong> 53, Ghodha, Hatiya, Shivapur, Varanasi,
-                UP 221003 (Near Octavia Hospital)
+                <strong>Address:</strong> 53, Ghodha, Hatiya, Shivapur, Varanasi, UP 221003 (Near Octavia Hospital)
               </p>
               <p className="mt-2 text-sm">
                 <strong>Phone:</strong>{" "}
@@ -194,17 +270,13 @@ Extras (child seat, hotel, guide):`;
                   {SUPPORT_EMAIL}
                 </a>
               </p>
-              <p className="text-sm mt-2 text-gray-500">
-                For arrivals call the phone number above for urgent help.
-              </p>
+              <p className="text-sm mt-2 text-gray-500">For arrivals call the phone number above for urgent help.</p>
             </div>
           </div>
         </div>
 
         <div className="max-w-6xl mx-auto px-6 mt-10">
-          <div className="text-center text-sm text-gray-500">
-            Trusted local drivers · Fair pricing · Easy booking
-          </div>
+          <div className="text-center text-sm text-gray-500">Trusted local drivers · Fair pricing · Easy booking</div>
         </div>
       </main>
     </>

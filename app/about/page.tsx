@@ -1,25 +1,93 @@
 // app/about/page.tsx
 import React from "react";
 import Link from "next/link";
+import Script from "next/script";
+import { SUPPORT_EMAIL, SUPPORT_PHONE } from "@/lib/constants";
 
-/**
- * Simple SEO metadata for /about
- */
 export const metadata = {
   title: "About — BookYourTravell",
   description:
     "BookYourTravell — Trusted local operator for airport transfers, day trips and custom Varanasi experiences.",
+  keywords: [
+    "about BookYourTravell",
+    "Varanasi taxi operator",
+    "local travel guide Varanasi",
+    "BookYourTravell team",
+    "safe travel varanasi",
+  ],
+  alternates: {
+    canonical: "https://bookyourtravell.com/about",
+  },
   openGraph: {
     title: "About — BookYourTravell",
     description:
       "Trusted local operator for airport transfers, day trips and custom Varanasi experiences.",
-    images: ["/images/og-image.jpg"],
+    url: "https://bookyourtravell.com/about",
+    siteName: "BookYourTravell",
+    images: [
+      {
+        url: "https://bookyourtravell.com/images/og-image.webp",
+        width: 1200,
+        height: 630,
+        alt: "About BookYourTravell",
+      },
+    ],
+    locale: "en_IN",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "About — BookYourTravell",
+    description:
+      "BookYourTravell — Trusted local operator for airport transfers, day trips and custom Varanasi experiences.",
+    images: ["https://bookyourtravell.com/images/og-image.webp"],
   },
 };
 
 export default function AboutPage() {
+  const siteUrl = "https://bookyourtravell.com";
+  const pageUrl = `${siteUrl}/about`;
+
+  const ldObject = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": `${siteUrl}#organization`,
+        name: "BookYourTravell",
+        url: siteUrl,
+        logo: `${siteUrl}/images/og-image.webp`,
+        contactPoint: [
+          {
+            "@type": "ContactPoint",
+            telephone: SUPPORT_PHONE,
+            email: SUPPORT_EMAIL,
+            contactType: "customer support",
+            availableLanguage: ["English", "Hindi"],
+          },
+        ],
+      },
+      {
+        "@type": "AboutPage",
+        "@id": `${pageUrl}#aboutpage`,
+        url: pageUrl,
+        name: "About — BookYourTravell",
+        description:
+          "Learn about BookYourTravell — trusted local operator in Varanasi offering safe transfers, day trips and customized travel experiences.",
+        primaryImageOfPage: `${siteUrl}/images/og-image.webp`,
+      },
+    ],
+  };
+
   return (
     <main className="min-h-screen font-sans">
+      <Script
+        id="about-ldjson"
+        type="application/ld+json"
+        strategy="afterInteractive"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(ldObject) }}
+      />
+
       <section
         className="py-20"
         style={{
@@ -32,9 +100,9 @@ export default function AboutPage() {
             About BookYourTravell
           </h1>
           <p style={{ marginTop: 10, color: "#6b7280", fontSize: 16 }}>
-            Local guides & reliable drivers — safe, punctual transfers and curated
-            experiences in Varanasi & nearby. We keep pricing transparent and focus
-            on comfortable travel.
+            Local guides & reliable drivers — safe, punctual transfers and
+            curated experiences in Varanasi & nearby. We keep pricing transparent
+            and focus on comfortable travel.
           </p>
 
           <div
@@ -45,29 +113,54 @@ export default function AboutPage() {
               gap: 18,
             }}
           >
-            <div style={{ padding: 18, background: "#fff", borderRadius: 12, boxShadow: "0 8px 30px rgba(12,18,20,0.06)" }}>
+            <div
+              style={{
+                padding: 18,
+                background: "#fff",
+                borderRadius: 12,
+                boxShadow: "0 8px 30px rgba(12,18,20,0.06)",
+              }}
+            >
               <h3 style={{ margin: 0, fontWeight: 700 }}>Our Promise</h3>
-              <ul style={{ marginTop: 10, color: "#4b5563", lineHeight: 1.6 }}>
+              <ul
+                style={{ marginTop: 10, color: "#4b5563", lineHeight: 1.6 }}
+              >
                 <li>Trusted local drivers</li>
                 <li>Fixed fares — no surprises</li>
                 <li>Flight monitoring & on-time pickup</li>
               </ul>
             </div>
 
-            <div style={{ padding: 18, background: "#fff", borderRadius: 12, boxShadow: "0 8px 30px rgba(12,18,20,0.06)" }}>
+            <div
+              style={{
+                padding: 18,
+                background: "#fff",
+                borderRadius: 12,
+                boxShadow: "0 8px 30px rgba(12,18,20,0.06)",
+              }}
+            >
               <h3 style={{ margin: 0, fontWeight: 700 }}>What we offer</h3>
-              <ul style={{ marginTop: 10, color: "#4b5563", lineHeight: 1.6 }}>
+              <ul
+                style={{ marginTop: 10, color: "#4b5563", lineHeight: 1.6 }}
+              >
                 <li>Airport transfers (meet & greet)</li>
                 <li>Temple & day tours with local insights</li>
                 <li>Custom routes, family-friendly pacing</li>
               </ul>
             </div>
 
-            <div style={{ padding: 18, background: "#fff", borderRadius: 12, boxShadow: "0 8px 30px rgba(12,18,20,0.06)" }}>
+            <div
+              style={{
+                padding: 18,
+                background: "#fff",
+                borderRadius: 12,
+                boxShadow: "0 8px 30px rgba(12,18,20,0.06)",
+              }}
+            >
               <h3 style={{ margin: 0, fontWeight: 700 }}>Safety & Support</h3>
               <p style={{ marginTop: 10, color: "#4b5563" }}>
-                Drivers background-checked, regular vehicle maintenance, and 24/7
-                contact for bookings and support.
+                Drivers background-checked, regular vehicle maintenance, and
+                24/7 contact for bookings and support.
               </p>
             </div>
           </div>
@@ -87,7 +180,14 @@ export default function AboutPage() {
             >
               Contact Us
             </a>
-            <Link href="/packages" style={{ alignSelf: "center", color: "#fb923c", fontWeight: 700 }}>
+            <Link
+              href="/packages"
+              style={{
+                alignSelf: "center",
+                color: "#fb923c",
+                fontWeight: 700,
+              }}
+            >
               View Packages →
             </Link>
           </div>
@@ -96,25 +196,70 @@ export default function AboutPage() {
 
       <section style={{ padding: "48px 0" }}>
         <div className="max-w-6xl mx-auto px-6">
-          <h2 style={{ fontSize: 28, fontWeight: 800, color: "#16323b" }}>Team & Story</h2>
-          <p style={{ marginTop: 12, color: "#4b5563", lineHeight: 1.7 }}>
-            We started as a small local taxi service with a mission — make travel
-            in and around Varanasi easy and trustworthy for families and solo
-            travelers. Today we combine local knowledge, punctual drivers and
-            easy booking so you can focus on the trip, not logistics.
+          <h2 style={{ fontSize: 28, fontWeight: 800, color: "#16323b" }}>
+            Team & Story
+          </h2>
+          <p
+            style={{ marginTop: 12, color: "#4b5563", lineHeight: 1.7 }}
+          >
+            We started as a small local taxi service with a mission — make
+            travel in and around Varanasi easy and trustworthy for families and
+            solo travelers. Today we combine local knowledge, punctual drivers
+            and easy booking so you can focus on the trip, not logistics.
           </p>
 
-          <div style={{ marginTop: 18, display: "flex", gap: 14, flexWrap: "wrap" }}>
-            <div style={{ width: 220, background: "#fff", padding: 14, borderRadius: 12, boxShadow: "0 8px 20px rgba(12,18,20,0.06)" }}>
-              <div style={{ height: 120, background: "#f3f4f6", borderRadius: 8 }} />
-              <h4 style={{ marginTop: 10, marginBottom: 6 }}>Shivam — Founder</h4>
-              <div style={{ color: "#6b7280", fontSize: 14 }}>Operations & product</div>
+          <div
+            style={{
+              marginTop: 18,
+              display: "flex",
+              gap: 14,
+              flexWrap: "wrap",
+            }}
+          >
+            <div
+              style={{
+                width: 220,
+                background: "#fff",
+                padding: 14,
+                borderRadius: 12,
+                boxShadow: "0 8px 20px rgba(12,18,20,0.06)",
+              }}
+            >
+              <div
+                style={{
+                  height: 120,
+                  background: "#f3f4f6",
+                  borderRadius: 8,
+                }}
+              />
+              <h4 style={{ marginTop: 10, marginBottom: 6 }}>
+                Shivam — Founder
+              </h4>
+              <div style={{ color: "#6b7280", fontSize: 14 }}>
+                Operations & product
+              </div>
             </div>
 
-            <div style={{ width: 220, background: "#fff", padding: 14, borderRadius: 12, boxShadow: "0 8px 20px rgba(12,18,20,0.06)" }}>
-              <div style={{ height: 120, background: "#f3f4f6", borderRadius: 8 }} />
+            <div
+              style={{
+                width: 220,
+                background: "#fff",
+                padding: 14,
+                borderRadius: 12,
+                boxShadow: "0 8px 20px rgba(12,18,20,0.06)",
+              }}
+            >
+              <div
+                style={{
+                  height: 120,
+                  background: "#f3f4f6",
+                  borderRadius: 8,
+                }}
+              />
               <h4 style={{ marginTop: 10, marginBottom: 6 }}>Local Team</h4>
-              <div style={{ color: "#6b7280", fontSize: 14 }}>Drivers & guides</div>
+              <div style={{ color: "#6b7280", fontSize: 14 }}>
+                Drivers & guides
+              </div>
             </div>
           </div>
         </div>

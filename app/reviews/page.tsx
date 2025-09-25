@@ -1,5 +1,6 @@
-"use client";
 // app/reviews/page.tsx
+"use client";
+
 import React, { useMemo, useState, useEffect, useCallback } from "react";
 import Head from "next/head";
 import Link from "next/link";
@@ -274,11 +275,34 @@ export default function ReviewsPage() {
 
   useEffect(() => setPage(1), [search, selectedRating, sortOrder]);
 
+  const ORIGIN = process.env.NEXT_PUBLIC_SITE_ORIGIN || "https://bookyourtravell.com";
+  const pageUrl = `${ORIGIN}/reviews`;
+  const title = "Traveller Reviews — BookYourTravell";
+  const description = "Read traveller reviews for BookYourTravell — Varanasi trips & taxis. Verified feedback, ratings, and replies.";
+  const keywords = "BookYourTravell reviews, Varanasi taxi reviews, car rental reviews, traveller feedback, temple tour reviews";
+
   return (
     <>
       <Head>
-        <title>Traveller Reviews — BookYourTravell</title>
-        <meta name="description" content="Traveller reviews for BookYourTravell — Varanasi trips & taxis." />
+        <title>{title}</title>
+        <meta name="description" content={description} />
+        <meta name="keywords" content={keywords} />
+        <link rel="canonical" href={pageUrl} />
+        {/* Open Graph */}
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="BookYourTravell" />
+        <meta property="og:title" content={title} />
+        <meta property="og:description" content={description} />
+        <meta property="og:url" content={pageUrl} />
+        <meta property="og:image" content={`${ORIGIN}/images/og-reviews.webp`} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:locale" content="en_IN" />
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={title} />
+        <meta name="twitter:description" content={description} />
+        <meta name="twitter:image" content={`${ORIGIN}/images/og-reviews.webp`} />
       </Head>
 
       <main className="min-h-screen bg-gray-50 p-6">
@@ -441,6 +465,22 @@ export default function ReviewsPage() {
           </div>
         </div>
       </main>
+
+      {/* Page-level JSON-LD */}
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "CollectionPage",
+            name: "BookYourTravell Traveller Reviews",
+            description:
+              "Read traveller reviews about BookYourTravell — taxi booking, car rentals and temple tours in Varanasi.",
+            url: pageUrl,
+          }),
+        }}
+      />
     </>
   );
 }
