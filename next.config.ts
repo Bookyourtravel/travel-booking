@@ -2,25 +2,36 @@
 import type { NextConfig } from "next";
 import path from "path";
 
-/**
- * Next config (TypeScript).
- * - CSP string is normalized to single-line to avoid ERR_INVALID_CHAR.
- * - Add any extra domains you need into the arrays below.
- */
+const isProd = process.env.NODE_ENV === "production";
 
-const rawCSP = `
+/**
+ * CSP — dev में relaxed (fast-refresh, inline scripts allowed),
+ * prod में tighter (unsafe-eval हटाया गया).
+ */
+const cspDev = `
   default-src 'self';
   img-src 'self' data: https:;
   connect-src 'self' https://www.google-analytics.com https://www.googleapis.com https://www.recaptcha.net https://www.gstatic.com https://fonts.googleapis.com https://fonts.gstatic.com;
   font-src 'self' https://fonts.gstatic.com;
-  style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+  style-src 'self' 'unsafe-inline' https:;
   script-src 'self' 'unsafe-inline' 'unsafe-eval' https: https://www.google.com https://www.gstatic.com https://www.recaptcha.net;
   frame-src 'self' https://www.google.com https://www.recaptcha.net;
   frame-ancestors 'self';
 `;
 
+const cspProd = `
+  default-src 'self';
+  img-src 'self' data: https:;
+  connect-src 'self' https://www.google-analytics.com https://www.googleapis.com https://www.recaptcha.net https://www.gstatic.com https://fonts.googleapis.com https://fonts.gstatic.com;
+  font-src 'self' https://fonts.gstatic.com;
+  style-src 'self' 'unsafe-inline' https:;
+  script-src 'self' https: https://www.google.com https://www.gstatic.com https://www.recaptcha.net;
+  frame-src 'self' https://www.google.com https://www.recaptcha.net;
+  frame-ancestors 'self';
+`;
+
 /* normalize CSP -> single-line, collapse whitespace, trim */
-const ContentSecurityPolicy = rawCSP.replace(/\s+/g, " ").trim();
+const ContentSecurityPolicy = (isProd ? cspProd : cspDev).replace(/\s+/g, " ").trim();
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
@@ -42,7 +53,7 @@ const nextConfig: NextConfig = {
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
           { key: "Permissions-Policy", value: "geolocation=(), microphone=(), camera=()" },
-          // optional: uncomment/report only mode (advanced)
+          // optional: uncomment/report-only mode (advanced)
           // { key: "Content-Security-Policy-Report-Only", value: "<your-report-uri-or-empty>" },
         ],
       },
